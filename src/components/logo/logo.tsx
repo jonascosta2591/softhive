@@ -62,6 +62,7 @@ export function Logo({
           width: 130,
           height: 80,
           marginLeft: 1,
+          marginTop: 3,
           ...(!isSingle && { width: 102, height: 36 }),
           ...(disabled && { pointerEvents: 'none' }),
         },

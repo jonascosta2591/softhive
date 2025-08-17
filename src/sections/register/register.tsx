@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
@@ -14,13 +13,13 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export function SignInView() {
+export function Register() {
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSignIn = useCallback(() => {
-    router.push('/');
+    router.push('/sign-in');
   }, [router]);
 
   const handleRegister = useCallback(() => {
@@ -45,10 +44,6 @@ export function SignInView() {
         }}
       />
 
-      <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
-        Esqueceu a senha?
-      </Link>
-
       <TextField
         fullWidth
         name="Senha"
@@ -69,19 +64,26 @@ export function SignInView() {
         sx={{ mb: 3 }}
       />
 
-      <Button
+      <TextField
         fullWidth
-        size="large"
-        type="submit"
-        color="inherit"
-        variant="contained"
-        onClick={handleSignIn}
-        sx={{
-          marginBottom: 1
+        name="ConfirmPass"
+        label="Confirma Senha"
+        type={showPassword ? 'text' : 'password'}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                  <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
         }}
-      >
-        Fazer Login
-      </Button>
+        sx={{ mb: 3 }}
+      />
+
 
       <Button
         fullWidth
@@ -90,9 +92,26 @@ export function SignInView() {
         color="inherit"
         variant="contained"
         onClick={handleRegister}
+        sx={{
+          marginBottom: 1
+        }}
       >
         Se Registrar
       </Button>
+      
+      <Button
+        fullWidth
+        size="large"
+        type="submit"
+        color="inherit"
+        variant="contained"
+        onClick={handleSignIn}
+        
+      >
+        Fazer Login
+      </Button>
+
+      
     </Box>
   );
 
@@ -107,7 +126,7 @@ export function SignInView() {
           mb: 5,
         }}
       >
-        <Typography variant="h5">Fazer Login</Typography>
+        <Typography variant="h5">Fazer Registro</Typography>
         
       </Box>
       {renderForm}

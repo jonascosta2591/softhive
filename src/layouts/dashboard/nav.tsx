@@ -151,12 +151,12 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
                         borderRadius: 0.75,
                         typography: 'body2',
                         fontWeight: 'fontWeightMedium',
-                        color: theme.vars.palette.text.secondary,
+                        color: '#141556',
                         minHeight: 44,
                         ...(isActived && {
                           fontWeight: 'fontWeightSemiBold',
-                          color: theme.vars.palette.primary.main,
-                          bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.08),
+                          color: '#141556',
+                          bgcolor: '#ebebeb',
                           '&:hover': {
                             bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.16),
                           },

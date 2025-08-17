@@ -1,14 +1,14 @@
 
-import { SignInView } from 'src/sections/auth';
+import { Programas } from 'src/sections/programas';
 
 // ----------------------------------------------------------------------
 
 export default function Page() {
   return (
     <>
-      <title>Fazer Login - Softhive</title>
+      <title>Programas - Comprar</title>
 
-      <SignInView />
+      <Programas />
     </>
   );
 }

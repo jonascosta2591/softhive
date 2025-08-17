@@ -1,14 +1,14 @@
 
-import { SignInView } from 'src/sections/auth';
+import { Register } from 'src/sections/register';
 
 // ----------------------------------------------------------------------
 
 export default function Page() {
   return (
     <>
-      <title>Fazer Login - Softhive</title>
+      <title>Fazer Registro - Softhive</title>
 
-      <SignInView />
+      <Register />
     </>
   );
 }
