@@ -34,11 +34,11 @@ export function Programas(){
     return (
         <DashboardContent maxWidth="xl">
         <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 } }}>
-            Lista de programas
+            Lista de Softwares
         </Typography>
 
         <Grid container spacing={3}>
-            <TextField label="Pesquisar programa" type="Pesquisar programa" variant="filled" fullWidth />
+            <TextField label="Pesquisar programa" type="Pesquisar programa" variant="outlined" fullWidth />
             <Button sx={{backgroundColor: '#141556', color: '#fff', marginBottom: 3}}>Pesquisar</Button>
         </Grid>
 

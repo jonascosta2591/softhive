@@ -13,18 +13,18 @@ export type NavItem = {
 
 export const navData = [
   {
-    title: 'Meus programas',
+    title: 'Meus Softwares',
     path: '/',
     icon: icon('ic-analytics'),
   },
   {
-    title: 'Programas',
+    title: 'Comprar Softwares',
     path: '/programas',
     icon: icon('ic-cart'),
   },
   {
-    title: 'Meus Dados',
-    path: '/meus-dados',
+    title: 'Minha conta',
+    path: '/minha-conta',
     icon: icon('ic-user'),
   },
   {

@@ -19,6 +19,8 @@ export const UserPage = lazy(() => import('src/pages/user'));
 
 export const UserRegister = lazy(() => import('src/pages/register'));
 export const Programas = lazy(() => import('src/pages/programas'));
+export const MinhaConta = lazy(() => import('src/pages/minha-conta'));
+export const Pagamento = lazy(() => import('src/pages/pagamento'));
 
 
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
@@ -57,9 +59,15 @@ export const routesSection: RouteObject[] = [
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'programas', element: <Programas /> },
-      // { path: 'products', element: <ProductsPage /> },
+      { path: 'minha-conta', element: <MinhaConta /> },
       // { path: 'blog', element: <BlogPage /> },
     ],
+  },
+  {
+    path: 'pagamento',
+    element: (
+      <Pagamento />
+    ),
   },
   {
     path: 'register',

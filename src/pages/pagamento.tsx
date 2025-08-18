@@ -1,14 +1,14 @@
 
-import { Programas } from 'src/sections/programas';
+import { Pagamento } from 'src/sections/pagamento';
 
 // ----------------------------------------------------------------------
 
 export default function Page() {
   return (
     <>
-      <title>Softwares - Comprar</title>
+      <title>Softwares - Pagamento</title>
 
-      <Programas />
+      <Pagamento />
     </>
   );
 }

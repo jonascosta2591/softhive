@@ -1,14 +1,14 @@
 
-import { Programas } from 'src/sections/programas';
+import { MinhaConta } from 'src/sections/minha-conta';
 
 // ----------------------------------------------------------------------
 
 export default function Page() {
   return (
     <>
-      <title>Softwares - Comprar</title>
+      <title>Minha conta</title>
 
-      <Programas />
+      <MinhaConta />
     </>
   );
 }

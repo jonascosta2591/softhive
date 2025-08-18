@@ -173,6 +173,11 @@ export const customConfig = {
     ...importRules(),
     ...unusedImportsRules(),
     ...sortImportsRules(),
+    "perfectionist/sort-imports": "off",
+    "import/no-unresolved": "off",
+    "@typescript-eslint/consistent-type-imports": "off",
+    "consistent-return": "off",
+    "react/jsx-no-useless-fragment": "off"
   },
 };
 
