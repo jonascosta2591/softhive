@@ -14,12 +14,12 @@ export type NavItem = {
 export const navData = [
   {
     title: 'Meus Softwares',
-    path: '/',
+    path: '/my-softwares',
     icon: icon('ic-analytics'),
   },
   {
     title: 'Comprar Softwares',
-    path: '/programas',
+    path: '/softwares',
     icon: icon('ic-cart'),
   },
   {
