@@ -1,10 +1,8 @@
 import type { CSSObject, Breakpoint } from '@mui/material/styles';
+import { Box } from '@mui/material'
 
-import { merge } from 'es-toolkit';
 
-import Alert from '@mui/material/Alert';
 
-import { Logo } from 'src/components/logo';
 
 import { AuthContent } from './content';
 import { MainSection } from '../core/main-section';
@@ -15,6 +13,7 @@ import type { AuthContentProps } from './content';
 import type { MainSectionProps } from '../core/main-section';
 import type { HeaderSectionProps } from '../core/header-section';
 import type { LayoutSectionProps } from '../core/layout-section';
+import { Logo } from 'src/components/logo';
 
 // ----------------------------------------------------------------------
 
@@ -37,35 +36,31 @@ export function AuthLayout({
   layoutQuery = 'md',
 }: AuthLayoutProps) {
   const renderHeader = () => {
-    const headerSlotProps: HeaderSectionProps['slotProps'] = { container: { maxWidth: false } };
+    // const headerSlotProps: HeaderSectionProps['slotProps'] = { container: { maxWidth: true } };
 
-    const headerSlots: HeaderSectionProps['slots'] = {
-      topArea: (
-        <Alert severity="info" sx={{ display: 'none', borderRadius: 0 }}>
-          This is an info Alert.
-        </Alert>
-      ),
+    const headerSlots = {
       leftArea: (
         <>
           {/** @slot Logo */}
-          <Logo />
+          <Box sx={{
+            width: '100%',
+            height: '500px',
+            display: 'flex',
+            alignItems: 'end',
+            justifyContent: 'center'
+          }}>
+            <Logo/>
+          </Box>
         </>
       ),
     };
 
     return (
       <HeaderSection
-        disableElevation
-        layoutQuery={layoutQuery}
-        {...slotProps?.header}
-        slots={{ ...headerSlots, ...slotProps?.header?.slots }}
-        slotProps={merge(headerSlotProps, slotProps?.header?.slotProps ?? {})}
-        sx={[
-          { position: { [layoutQuery]: 'fixed' } },
-          ...(Array.isArray(slotProps?.header?.sx)
-            ? (slotProps?.header?.sx ?? [])
-            : [slotProps?.header?.sx]),
-        ]}
+        slots={{ ...headerSlots }}
+        sx={{
+          height: '100%'
+        }}
       />
     );
   };
@@ -75,19 +70,11 @@ export function AuthLayout({
   const renderMain = () => (
     <MainSection
       {...slotProps?.main}
-      sx={[
-        (theme) => ({
-          alignItems: 'center',
-          p: theme.spacing(3, 2, 10, 2),
-          [theme.breakpoints.up(layoutQuery)]: {
-            justifyContent: 'center',
-            p: theme.spacing(10, 0, 10, 0),
-          },
-        }),
-        ...(Array.isArray(slotProps?.main?.sx)
-          ? (slotProps?.main?.sx ?? [])
-          : [slotProps?.main?.sx]),
-      ]}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
     >
       <AuthContent {...slotProps?.content}>{children}</AuthContent>
     </MainSection>

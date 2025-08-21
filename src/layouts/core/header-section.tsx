@@ -62,12 +62,9 @@ export function HeaderSection({
     >
       {slots?.topArea}
 
-      <HeaderContainer layoutQuery={layoutQuery} {...slotProps?.container}>
+      <HeaderContainer>
         {slots?.leftArea}
 
-        <HeaderCenterArea {...slotProps?.centerArea}>{slots?.centerArea}</HeaderCenterArea>
-
-        {slots?.rightArea}
       </HeaderContainer>
 
       {slots?.bottomArea}
@@ -141,6 +138,7 @@ const HeaderContainer = styled(Container, {
 })<Pick<HeaderSectionProps, 'layoutQuery'>>(({ layoutQuery = 'md', theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  maxHeight: '100%',
   color: 'var(--color)',
   height: 'var(--layout-header-mobile-height)',
   [theme.breakpoints.up(layoutQuery)]: { height: 'var(--layout-header-desktop-height)' },
