@@ -44,10 +44,11 @@ export function AuthLayout({
           {/** @slot Logo */}
           <Box sx={{
             width: '100%',
-            height: '480px',
+            height: '100%',
             display: 'flex',
             alignItems: 'end',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            marginTop: 5
           }}>
             <Logo/>
           </Box>

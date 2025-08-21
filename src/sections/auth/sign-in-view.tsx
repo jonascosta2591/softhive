@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -27,6 +27,14 @@ export function SignInView() {
   // const handleSignIn = useCallback(() => {
   //   router.push('/');
   // }, [router]);
+
+  useEffect(() => {
+    const emailExist = localStorage.getItem('email')
+
+    if(emailExist) {
+      setEmail(emailExist)
+    }
+  }, [])
 
   const handleSignIn = async () => {
     setBtnDisabled(true)

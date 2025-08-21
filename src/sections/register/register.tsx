@@ -70,6 +70,7 @@ export function Register() {
     if(response.data.msg) {
       alert("Usuário registrado com sucesso, vamos redirecionar você para o login!")
       setBtnDisabled(false)
+      localStorage.setItem('email', email)
       return router.push(`/sign-in`);
     }
   }
