@@ -35,13 +35,25 @@ export function Register() {
 
   const handleRegister = async () => {
     setBtnDisabled(true)
-    if(confirmPassword != password) return alert('As senhas não são iguais!')
+    if(confirmPassword != password) {
+      setBtnDisabled(false)
+      return alert('As senhas não são iguais!')
+    }
 
-    if(email.length === 0) return alert('Digite seu email')
+    if(email.length === 0) {
+      setBtnDisabled(false)
+      return alert('Digite seu email')
+    }
 
-    if(password.length === 0) return alert('Digite sua senha')
+    if(password.length === 0) {
+      setBtnDisabled(false)
+      return alert('Digite sua senha')
+    }
 
-    if(password.length < 7) return alert('Sua senha deve ter mais que 7 caracteres')
+    if(password.length < 7) {
+      setBtnDisabled(false)
+      return alert('Sua senha deve ter mais que 7 caracteres')
+    }
       
     const response = await axios.post('https://softhive-backend.onrender.com/registrar/registrar', {
       email, 
