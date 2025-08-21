@@ -1,6 +1,5 @@
 import type { CSSObject, Breakpoint } from '@mui/material/styles';
-import { Box } from '@mui/material'
-
+import {Box} from '@mui/material'
 
 
 
@@ -33,7 +32,6 @@ export function AuthLayout({
   cssVars,
   children,
   slotProps,
-  layoutQuery = 'md',
 }: AuthLayoutProps) {
   const renderHeader = () => {
     // const headerSlotProps: HeaderSectionProps['slotProps'] = { container: { maxWidth: true } };
@@ -42,16 +40,7 @@ export function AuthLayout({
       leftArea: (
         <>
           {/** @slot Logo */}
-          <Box sx={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'end',
-            justifyContent: 'center',
-            marginTop: 5
-          }}>
-            <Logo/>
-          </Box>
+          
         </>
       ),
     };
@@ -77,6 +66,12 @@ export function AuthLayout({
         justifyContent: 'center'
       }}
     >
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'end'
+      }}>
+        <Logo/>
+      </Box>
       <AuthContent {...slotProps?.content}>{children}</AuthContent>
     </MainSection>
   );
