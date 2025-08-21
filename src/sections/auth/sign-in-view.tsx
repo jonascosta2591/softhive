@@ -12,16 +12,51 @@ import { useRouter } from 'src/routes/hooks';
 
 import { Iconify } from 'src/components/iconify';
 
+import axios from 'axios'
+
 // ----------------------------------------------------------------------
 
 export function SignInView() {
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [btnDisabled, setBtnDisabled] = useState<boolean>(false)
 
-  const handleSignIn = useCallback(() => {
-    router.push('/');
-  }, [router]);
+  // const handleSignIn = useCallback(() => {
+  //   router.push('/');
+  // }, [router]);
+
+  const handleSignIn = async () => {
+    setBtnDisabled(true)
+    const response = await axios.post('https://softhive-backend.onrender.com/login/login', {
+      email, 
+      senha: password
+    }, {
+      validateStatus: () => true,
+    })
+
+    if(response.data.error) {
+      setBtnDisabled(false)
+      return alert('Email ou senha inválidos')
+    }
+
+    if(response.data.token) {
+      setBtnDisabled(false)
+      localStorage.setItem('token', response.data.token)
+
+      const softwareEscolhido = localStorage.getItem('softwareEscolhido')
+
+      if(softwareEscolhido){
+        return router.push(`/pagamento?id=${softwareEscolhido}`);
+      }else{
+        return router.push(`/softwares`);
+      }
+
+    }
+
+  }
 
   const handleRegister = useCallback(() => {
     router.push('/register');
@@ -43,6 +78,8 @@ export function SignInView() {
         slotProps={{
           inputLabel: { shrink: true },
         }}
+        onChange={(ev) => setEmail(ev.target.value)}
+        value={email}
       />
 
       <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
@@ -67,6 +104,8 @@ export function SignInView() {
           },
         }}
         sx={{ mb: 3 }}
+        onChange={(ev) => setPassword(ev.target.value)}
+        value={password}
       />
 
       <Button
@@ -79,6 +118,7 @@ export function SignInView() {
         sx={{
           marginBottom: 1
         }}
+        disabled={btnDisabled}
       >
         Fazer Login
       </Button>
@@ -90,6 +130,11 @@ export function SignInView() {
         color="inherit"
         variant="contained"
         onClick={handleRegister}
+        sx={{
+          backgroundColor: '#fff',
+          border: 'solid 1px #000',
+          color: '#000'
+        }}
       >
         Se Registrar
       </Button>

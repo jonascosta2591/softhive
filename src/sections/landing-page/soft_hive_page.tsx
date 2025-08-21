@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -10,7 +10,7 @@ import {
   ThemeProvider,
   Link as MuiLink,
 } from "@mui/material";
-
+import axios from 'axios'
 // ⚙️ Tema base (você pode ajustar se desejar usar palette do MUI)
 const theme = createTheme({
   typography: {
@@ -31,8 +31,12 @@ const theme = createTheme({
   },
 });
 
+
 // 🔗 Injeta os links de fontes/ícones como no HTML original
 function useHeadLinks(): void {
+
+  
+  
   useEffect(() => {
     const interHref =
       "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap";
@@ -360,6 +364,15 @@ const ORIGINAL_CSS = `
   onBuyPrice: number;
  };
 
+ type ProductNew = {
+  id: number;
+  name: string;
+  image: string;
+  price: number;
+  category: string;
+  description: string;
+ }
+
 // 🧩 Dados dos produtos
 const products: Product[] = [
   {
@@ -431,8 +444,12 @@ function scrollToProducts(): void {
 
 function handlePurchase(
   e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  productName: string
+  productName: string,
+  id: number
 ) {
+
+  localStorage.setItem('softwareEscolhido', id.toString())
+
   const button = e.currentTarget;
   const originalHTML = button.innerHTML;
 
@@ -453,11 +470,22 @@ function handlePurchase(
 
   // Aqui entraria o redirecionamento real
   console.log(`Iniciando compra do produto: ${productName}`);
+
+  window.location.href = "./sign-in"
 }
 
 export function SoftHivePage() {
   useHeadLinks();
   useAnimations();
+
+  const [product, setProduct] = useState<ProductNew[]>([])
+
+  useEffect(() => {
+    axios.get('https://softhive-backend.onrender.com/softwares/softwares').then((response) => {
+      setProduct(response.data)
+    })
+  }, [])
+
 
   return (
     <ThemeProvider theme={theme}>
@@ -589,12 +617,12 @@ export function SoftHivePage() {
           </Box>
 
           <Box className="products-grid">
-            {products.map((p) => (
-              <Card key={p.key} className={`card product-card ${p.slideClass}`} elevation={0}>
+            {product.map((p) => (
+              <Card key={p.id} className={`card product-card `} elevation={0}>
                 <CardContent sx={{ p: 0 }}>
                   <Box className="product-header">
                     <Box className="product-icon">
-                      <img src={p.img} alt={`Logo do ${p.name}`} />
+                      <img src={p.image} alt={`Logo do ${p.name}`} />
                     </Box>
                     <Box className="product-info">
                       <Typography component="h3" className="h3">
@@ -605,7 +633,7 @@ export function SoftHivePage() {
                   </Box>
 
                   <Typography className="body product-description">
-                    {p.key === "photoshop" && (
+                    {/* {p.key === "photoshop" && (
                       <>O padrão mundial para edição de imagens, design gráfico e fotografia digital. Ferramentas avançadas para criação profissional.</>
                     )}
                     {p.key === "illustrator" && (
@@ -622,17 +650,18 @@ export function SoftHivePage() {
                     )}
                     {p.key === "aftereffects" && (
                       <>Criação de efeitos visuais, motion graphics e composição digital. Essencial para produção audiovisual profissional.</>
-                    )}
+                    )} */}
+                    {p.description}
                   </Typography>
 
                   <Box className="product-footer">
                     <Box>
-                      <span className="product-price">{p.price}</span>
-                      <span className="product-price-original">{p.original}</span>
+                      <span className="product-price">R$ {p.price}</span>
+                      {/* <span className="product-price-original">{p.original}</span> */}
                     </Box>
                     <Button
                       className="btn btn-primary"
-                      onClick={(e) => handlePurchase(e, p.name)}
+                      onClick={(e) => handlePurchase(e, p.name, p.id)}
                       startIcon={<Box component="i" className="fas fa-download" aria-hidden />}
                     >
                       Comprar Agora

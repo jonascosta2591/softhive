@@ -12,6 +12,7 @@ import {
   Checkbox,
   Container,
   TextField,
+  CardMedia,
   IconButton,
   Typography,
   CardContent,
@@ -22,7 +23,7 @@ import {
   DialogActions,
   DialogContent,
   ThemeProvider, // Adicionado para o ícone de olho
-  CircularProgress,
+  CircularProgress
 } from '@mui/material';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -35,6 +36,7 @@ import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
+
 // Ícone de erro para o balão de fala
 
 // Substituindo os ícones de 'react-icons' por ícones do Material-UI para resolver o erro.
@@ -241,6 +243,11 @@ const Pagamento: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Novo estado para visibilidade da confirmação de senha
   const [passwordsMatchError, setPasswordsMatchError] = useState(false); // Novo estado para o erro de senhas
 
+  const [btnDisabled, setBtnDisabled] = useState<boolean>(false)
+  const [imagemPixQrCode, setImagemPixQrCode] = useState<string>('')
+  const [codigoCopiaEcolaPix, setCodigoCopiaEcolaPix] = useState<string>('')
+  const [textButtonCopiaEcola, setTextButtonCopiaECola] = useState<string>('Pagar com código copia e cola')
+
   const [promo, setPromo] = useState('');
   const [cart, setCart] = useState<Product[]>([]);
 
@@ -281,26 +288,52 @@ const Pagamento: React.FC = () => {
   };
 
 const handleSubmitPayment = async () => {
+  if(firstName.length === 0) return alert('Digite seu nome')
+  if(lastName.length === 0) return alert('Digite seu sobrenome')
+  if(cpf.length === 0) return alert('Digite seu CPF')
+  
   if (method === 'pix') {
     const IdsSoftwaresEscolhidos = cart.map((c: Product) => c.id)
     const AuthorizationToken = localStorage.getItem('token')
-
-    const response = await axios.post("https://softhive-backend.onrender.com/comprar_software/comprar", {
+    setBtnDisabled(true)
+    try{
+      const response = await axios.post("https://softhive-backend.onrender.com/comprar_software/comprar", {
         softwaresIds: IdsSoftwaresEscolhidos,
         paymentMethod: "PIX",
         paymentUserData: [
           { name: firstName + ' ' + lastName, cpfCnpj: cpf }
         ]
       }, {
+        
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + AuthorizationToken
         }
       })
 
-    console.log(response)
+      if(response.data){
+        console.log(response.data)
+        setImagemPixQrCode(response.data.data[0].encodedImage)
+        setCodigoCopiaEcolaPix(response.data.data[0].payload)
+      }
+    }catch{
+      alert('Ocorreu um erro com a comunicação do servidor, por favor tente novamente')
+      setBtnDisabled(false)
+      location.reload()
+    }
+
+    
   }
 }
+
+  function HandleCopiarCopiaEcolaPix(){
+    setTextButtonCopiaECola('Código Copiado')
+    navigator.clipboard.writeText(codigoCopiaEcolaPix)
+
+    setTimeout(() => {
+      setTextButtonCopiaECola('Pagar com código copia e cola')
+  }, 5000)
+  }
 
 
   // Form validation function
@@ -378,8 +411,13 @@ const handleSubmitPayment = async () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id")
+
+    const softwareEscolhido = localStorage.getItem('softwareEscolhido')
+    if(softwareEscolhido){ //Só redireciona a primeira vez
+        localStorage.removeItem('softwareEscolhido')
+    }
     
-    axios.get('https://softhive-backend.onrender.com/softwares/softwares').then((response) => {
+    axios.get('https://softhive-backend.onrender.com/softwares/softwares', {validateStatus: () => true}).then((response) => {
         const AvailableSoftwares = response.data
         setAvaliableProducts(AvailableSoftwares)
 
@@ -412,6 +450,36 @@ const handleSubmitPayment = async () => {
     node?.addEventListener('keyup', handler);
     return () => node?.removeEventListener('keyup', handler);
   }, []);
+
+  useEffect(() => {
+    //verifica se o pix foi pago, se sim redireciona para página "Meus softwares"
+  }, [imagemPixQrCode])
+
+  useEffect(() => {
+    function formatarTempo(segundos: number) {
+      const h = String(Math.floor(segundos / 3600)).padStart(2, '0');
+      const m = String(Math.floor((segundos % 3600) / 60)).padStart(2, '0');
+      const s = String(segundos % 60).padStart(2, '0');
+      return `${m} minutos e ${s} segundos`;
+    }
+    let tempo = 60 * 60; 
+
+    const contador = document.getElementById("contador");
+
+    const intervalo = setInterval(() => {
+
+      if(contador){
+        contador.textContent = formatarTempo(tempo);
+        tempo--;
+
+        if (tempo < 0) {
+          clearInterval(intervalo);
+          contador.textContent = "Pix Expirado!! Atualize a página e gere outro pix";
+        }
+      }
+      
+    }, 1000);
+  }, [imagemPixQrCode])
 
   // Mobile smooth scroll
   useEffect(() => {
@@ -743,144 +811,48 @@ const handleSubmitPayment = async () => {
                         >
                           <QrCode2Icon sx={{ fontSize: 64, color: '#333' }} />
                         </Box> */}
-                        <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }}>
-                          Escaneie o QR Code com seu app do banco
-                        </Typography>
-                      
-                      </Box>
-                    )}
+                        <Box sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {imagemPixQrCode && (
+                            <CardMedia 
+                            component="img"
+                            image={`data:image/png;base64,${imagemPixQrCode}`}
+                            alt="QRCODE PIX" 
+                            sx={{
+                              width: 250,   // largura fixa
+                              height: 250,  // altura fixa
+                            }}
+                            />
+                          )}
+                        </Box>
+                        {imagemPixQrCode && (
+                          <>
+                          <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }}>
+                            Escaneie o QR Code com seu app do banco
+                          </Typography>
+                          <Button onClick={HandleCopiarCopiaEcolaPix} sx={{
+                            backgroundColor: '#00C2E6',
+                            color: "#000"
+                          }}>{textButtonCopiaEcola}</Button>
 
-                    {/* Informações de Conta (Nova Seção) */}
-                    {/* <Box sx={{ mb: 4 }}>
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="space-between"
-                        spacing={1}
-                        sx={{ mb: 2 }}
-                      >
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <VpnKeyIcon fontSize="small" />
-                          <Typography variant="h6" fontWeight={600}>
-                            Criação de Conta
-                          </Typography>
-                        </Stack>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-                            Já tem uma conta?
-                          </Typography>
-                          
-                          <a href="http://softhive.shop/sign-in"><Button
-                            variant="text"
-                            size="small"
-                            sx={{
-                              color: 'var(--primary-cyan)',
-                              minWidth: 0,
-                              p: 0,
-                              '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
-                            }}
-                          >
-                            Entrar
-                          </Button></a>
-                        </Stack>
-                      </Stack>
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                          gap: 2,
-                        }}
-                      >
-                        <TextField
-                          fullWidth
-                          label="E-mail"
-                          placeholder="seu@email.com"
-                          value={email}
-                          onChange={e => setEmail(e.target.value)}
-                          type="email"
-                        />
-                        <TextField
-                          fullWidth
-                          label="Senha"
-                          placeholder="Crie uma senha"
-                          value={password}
-                          onChange={e => setPassword(e.target.value)}
-                          type={showPassword ? 'text' : 'password'}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton
-                                  onClick={handleTogglePasswordVisibility}
-                                  edge="end"
-                                >
-                                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                        <TextField
-                          fullWidth
-                          label="Confirme a senha"
-                          placeholder="Confirme sua senha"
-                          value={confirmPassword}
-                          onChange={e => setConfirmPassword(e.target.value)}
-                          onBlur={handleConfirmPasswordBlur}
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          error={passwordsMatchError}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton
-                                  onClick={handleToggleConfirmPasswordVisibility}
-                                  edge="end"
-                                >
-                                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                        {passwordsMatchError && (
-                          <Box
-                            sx={{
-                              bgcolor: 'rgba(220, 53, 69, 0.1)',
-                              border: '1px solid',
-                              borderColor: 'error.main',
-                              color: 'error.main',
-                              borderRadius: 1,
-                              p: '8px 12px',
-                              whiteSpace: 'nowrap',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              position: 'relative',
-                              '&::before': {
-                                content: '""',
-                                position: 'absolute',
-                                top: '50%',
-                                left: -8,
-                                transform: 'translateY(-50%)',
-                                borderTop: '8px solid transparent',
-                                borderBottom: '8px solid transparent',
-                                borderRight: '8px solid',
-                                borderRightColor: 'error.main',
-                              },
-                              '@media (max-width: 600px)': {
-                                '&::before': {
-                                  display: 'none',
-                                },
-                              },
-                            }}
-                          >
-                            <ErrorIcon sx={{ color: 'error.main' }} />
-                            <Typography variant="caption" sx={{ color: 'error.main' }}>
-                              As senhas informadas não coincidem.
+                          <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }}>
+                            O código Pix expira em:
+                            <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }} id="contador">
+                              00:00:00 
                             </Typography>
-                          </Box>
+                          </Typography>
+                          </>
+                        )}
+                        {imagemPixQrCode.length === 0 && (
+                          <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }}>
+                            Finalize sua compra para gerar o QRCODE do pix
+                          </Typography>
                         )}
                       </Box>
-                    </Box> */}
+                    )}
 
 
                     {/* Informações de Cobrança (E-mail foi removido) */}
@@ -937,7 +909,6 @@ const handleSubmitPayment = async () => {
                       startIcon={
                         submitting ? <CircularProgress size={20} /> : <CreditCardIcon />
                       }
-                      disabled={submitting}
                       fullWidth
                       sx={{
                         py: 1.5,
@@ -950,6 +921,7 @@ const handleSubmitPayment = async () => {
                         },
                       }}
                       onClick={handleSubmitPayment}
+                      disabled={btnDisabled}
                     >
                       {submitting
                         ? 'Processando pagamento...'

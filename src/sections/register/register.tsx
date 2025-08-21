@@ -11,6 +11,8 @@ import { useRouter } from 'src/routes/hooks';
 
 import { Iconify } from 'src/components/iconify';
 
+import axios from 'axios'
+
 // ----------------------------------------------------------------------
 
 export function Register() {
@@ -18,13 +20,49 @@ export function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [confirmPassword, setConfirmPassword] = useState<string>('')
+  const [btnDisabled, setBtnDisabled] = useState<boolean>(false)
+
   const handleSignIn = useCallback(() => {
     router.push('/sign-in');
   }, [router]);
 
-  const handleRegister = useCallback(() => {
-    router.push('/register');
-  }, [router]);
+  // const handleRegister = useCallback(() => {
+  //   router.push('/register');
+  // }, [router]);
+
+  const handleRegister = async () => {
+    setBtnDisabled(true)
+    if(confirmPassword != password) return alert('As senhas não são iguais!')
+
+    if(email.length === 0) return alert('Digite seu email')
+
+    if(password.length === 0) return alert('Digite sua senha')
+
+    if(password.length < 7) return alert('Sua senha deve ter mais que 7 caracteres')
+      
+    const response = await axios.post('https://softhive-backend.onrender.com/registrar/registrar', {
+      email, 
+      senha: password
+    }, {
+      validateStatus: () => true
+    })
+
+    if(response.data.error) {
+      setBtnDisabled(false)
+      return alert('Erro ao se registrar!, alguem ja se cadastrou com esse email!')
+    }
+
+    if(response.data.msg) {
+      alert("Usuário registrado com sucesso, vamos redirecionar você para o login!")
+      setBtnDisabled(false)
+      return router.push(`/sign-in`);
+    }
+  }
+
+
 
   const renderForm = (
     <Box
@@ -42,6 +80,8 @@ export function Register() {
         slotProps={{
           inputLabel: { shrink: true },
         }}
+        onChange={(ev) => setEmail(ev.target.value)}
+        value={email}
       />
 
       <TextField
@@ -62,6 +102,8 @@ export function Register() {
           },
         }}
         sx={{ mb: 3 }}
+        onChange={(ev) => setPassword(ev.target.value)}
+        value={password}
       />
 
       <TextField
@@ -82,6 +124,8 @@ export function Register() {
           },
         }}
         sx={{ mb: 3 }}
+        onChange={(ev) => setConfirmPassword(ev.target.value)}
+        value={confirmPassword}
       />
 
 
@@ -95,6 +139,7 @@ export function Register() {
         sx={{
           marginBottom: 1
         }}
+        disabled={btnDisabled}
       >
         Se Registrar
       </Button>
@@ -106,7 +151,11 @@ export function Register() {
         color="inherit"
         variant="contained"
         onClick={handleSignIn}
-        
+        sx={{
+          backgroundColor: '#fff',
+          border: 'solid 1px #000',
+          color: '#000'
+        }}
       >
         Fazer Login
       </Button>
