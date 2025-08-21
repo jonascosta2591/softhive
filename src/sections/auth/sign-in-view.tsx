@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -9,10 +9,12 @@ import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { useRouter } from 'src/routes/hooks';
-
 import { Iconify } from 'src/components/iconify';
 
-import axios from 'axios'
+import axios from 'axios';
+import { StatusDialog } from 'src/components/feedback/StatusDialog';
+
+type Severity = 'success' | 'error' | 'warning' | 'info';
 
 // ----------------------------------------------------------------------
 
@@ -20,51 +22,96 @@ export function SignInView() {
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
-  const [btnDisabled, setBtnDisabled] = useState<boolean>(false)
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [btnDisabled, setBtnDisabled] = useState<boolean>(false);
 
-  // const handleSignIn = useCallback(() => {
-  //   router.push('/');
-  // }, [router]);
+  // Estado do modal
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    severity: Severity;
+    title?: string;
+    message: string;
+    primaryAction?: { label: string; onClick?: () => void };
+  }>({
+    open: false,
+    severity: 'info',
+    message: '',
+  });
 
-  useEffect(() => {
-    const emailExist = localStorage.getItem('email')
+  const closeDialog = () => setDialog((d) => ({ ...d, open: false }));
 
-    if(emailExist) {
-      setEmail(emailExist)
-    }
-  }, [])
+  const openDialog = (config: Partial<typeof dialog>) =>
+    setDialog((d) => ({ ...d, open: true, ...config }));
 
   const handleSignIn = async () => {
-    setBtnDisabled(true)
-    const response = await axios.post('https://softhive-backend.onrender.com/login/login', {
-      email, 
-      senha: password
-    }, {
-      validateStatus: () => true,
-    })
-
-    if(response.data.error) {
-      setBtnDisabled(false)
-      return alert('Email ou senha inválidos')
+    // validações rápidas sem travar o botão
+    if (!email.trim()) {
+      openDialog({
+        severity: 'warning',
+        title: 'E-mail obrigatório',
+        message: 'Digite seu e-mail para entrar.',
+      });
+      return;
+    }
+    if (!password) {
+      openDialog({
+        severity: 'warning',
+        title: 'Senha obrigatória',
+        message: 'Digite sua senha para continuar.',
+      });
+      return;
     }
 
-    if(response.data.token) {
-      setBtnDisabled(false)
-      localStorage.setItem('token', response.data.token)
+    try {
+      setBtnDisabled(true);
 
-      const softwareEscolhido = localStorage.getItem('softwareEscolhido')
+      const response = await axios.post(
+        'https://softhive-backend.onrender.com/login/login',
+        { email, senha: password },
+        { validateStatus: () => true }
+      );
 
-      if(softwareEscolhido){
-        return router.push(`/pagamento?id=${softwareEscolhido}`);
-      }else{
-        return router.push(`/softwares`);
+      if (response.data?.error) {
+        setBtnDisabled(false);
+        openDialog({
+          severity: 'error',
+          title: 'Não foi possível entrar',
+          message: 'E-mail ou senha inválidos. Confira os dados e tente novamente.',
+        });
+        return;
       }
 
-    }
+      if (response.data?.token) {
+        localStorage.setItem('token', response.data.token);
+        setBtnDisabled(false);
 
-  }
+        const softwareEscolhido = localStorage.getItem('softwareEscolhido');
+
+        if (softwareEscolhido) {
+          router.push(`/pagamento?id=${softwareEscolhido}`);
+        } else {
+          router.push(`/softwares`);
+        }
+        return;
+      }
+
+      // Caso inesperado
+      setBtnDisabled(false);
+      openDialog({
+        severity: 'error',
+        title: 'Erro inesperado',
+        message: 'Não conseguimos validar seu login. Tente novamente em instantes.',
+      });
+    } catch {
+      setBtnDisabled(false);
+      openDialog({
+        severity: 'error',
+        title: 'Falha de conexão',
+        message: 'Verifique sua internet e tente novamente.',
+      });
+    }
+  };
 
   const handleRegister = useCallback(() => {
     router.push('/register');
@@ -78,26 +125,25 @@ export function SignInView() {
         flexDirection: 'column',
       }}
     >
-      
       <TextField
         fullWidth
         name="email"
-        label="Endereço de email"
+        type="email"
+        label="Email"
         sx={{ mb: 3 }}
-        slotProps={{
-          inputLabel: { shrink: true },
-        }}
+        slotProps={{ inputLabel: { shrink: true } }}
         onChange={(ev) => setEmail(ev.target.value)}
         value={email}
+        autoComplete="email"
       />
 
       <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
-        Esqueceu a senha?
+        Esqueceu sua senha?
       </Link>
 
       <TextField
         fullWidth
-        name="Senha"
+        name="password"
         label="Senha"
         type={showPassword ? 'text' : 'password'}
         slotProps={{
@@ -115,6 +161,7 @@ export function SignInView() {
         sx={{ mb: 3 }}
         onChange={(ev) => setPassword(ev.target.value)}
         value={password}
+        autoComplete="current-password"
       />
 
       <Button
@@ -125,14 +172,19 @@ export function SignInView() {
         variant="contained"
         onClick={handleSignIn}
         sx={{
-          marginBottom: 1
+          marginBottom: 1,
+          backgroundColor: '#00A9C4',
+          "&:hover": {
+          backgroundColor: "#001F3F",
+        }
         }}
         disabled={btnDisabled}
       >
-        Fazer Login
+        Entrar
       </Button>
 
-      <Button
+
+       <Button
         fullWidth
         size="large"
         type="submit"
@@ -141,11 +193,14 @@ export function SignInView() {
         onClick={handleRegister}
         sx={{
           backgroundColor: '#fff',
-          border: 'solid 1px #000',
-          color: '#000'
+          border: 'solid 1px #001F3F',
+          color: '#001F3F',
+          "&:hover": {
+          backgroundColor: "#001F3F",}
         }}
       >
-        Se Registrar
+        Criar uma nova conta
+
       </Button>
     </Box>
   );
@@ -162,11 +217,18 @@ export function SignInView() {
         }}
       >
         <Typography variant="h5">Fazer Login</Typography>
-        
       </Box>
+
       {renderForm}
-      
-      
+
+      <StatusDialog
+        open={dialog.open}
+        onClose={closeDialog}
+        severity={dialog.severity}
+        title={dialog.title}
+        message={dialog.message}
+        primaryAction={dialog.primaryAction}
+      />
     </>
   );
 }
