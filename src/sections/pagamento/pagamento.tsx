@@ -247,6 +247,7 @@ const Pagamento: React.FC = () => {
   const [imagemPixQrCode, setImagemPixQrCode] = useState<string>('')
   const [codigoCopiaEcolaPix, setCodigoCopiaEcolaPix] = useState<string>('')
   const [textButtonCopiaEcola, setTextButtonCopiaECola] = useState<string>('Pagar com código copia e cola')
+  const [transactionId, setTransactionId] = useState<string>('')
 
   const [promo, setPromo] = useState('');
   const [cart, setCart] = useState<Product[]>([]);
@@ -312,9 +313,26 @@ const handleSubmitPayment = async () => {
       })
 
       if(response.data){
-        console.log(response.data)
+        setTransactionId(response.data.idTransaction)
         setImagemPixQrCode(response.data.data[0].encodedImage)
         setCodigoCopiaEcolaPix(response.data.data[0].payload)
+
+        //verifica se o pix foi pago, se sim redireciona para página "Meus softwares"
+        setInterval(async () => {
+          try{
+            const responseVerifyTransaction = await axios.get(`https://softhive-backend.onrender.com/payment/payment?paymentId=${response.data.idTransaction}`, {
+              headers: {
+                'Authorization': `Bearer ${AuthorizationToken}`
+              }
+            })
+            if(responseVerifyTransaction.data.status !== 'PENDING'){
+              window.location.href = './my-softwares'
+            }
+            
+          }catch(err){
+            console.log(err)
+          }
+        }, 3000)
       }
     }catch{
       alert('Ocorreu um erro com a comunicação do servidor, por favor tente novamente')
@@ -452,12 +470,8 @@ const handleSubmitPayment = async () => {
   }, []);
 
   useEffect(() => {
-    //verifica se o pix foi pago, se sim redireciona para página "Meus softwares"
-  }, [imagemPixQrCode])
-
-  useEffect(() => {
     function formatarTempo(segundos: number) {
-      const h = String(Math.floor(segundos / 3600)).padStart(2, '0');
+      // const h = String(Math.floor(segundos / 3600)).padStart(2, '0');
       const m = String(Math.floor((segundos % 3600) / 60)).padStart(2, '0');
       const s = String(segundos % 60).padStart(2, '0');
       return `${m} minutos e ${s} segundos`;
@@ -578,7 +592,7 @@ const handleSubmitPayment = async () => {
             </svg>
           </Box>
 
-          <a href="http://softhive.shop/"><Button
+          <a href="./"><Button
             color="inherit"
             startIcon={<ArrowBackIcon />}
             sx={{ color: 'var(--text-secondary)' }}
@@ -823,7 +837,8 @@ const handleSubmitPayment = async () => {
                             alt="QRCODE PIX" 
                             sx={{
                               width: 250,   // largura fixa
-                              height: 250,  // altura fixa
+                              height: '100%',  // altura fixa
+                              borderRadius: 1
                             }}
                             />
                           )}
@@ -841,7 +856,7 @@ const handleSubmitPayment = async () => {
                           <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }}>
                             O código Pix expira em:
                             <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }} id="contador">
-                              00:00:00 
+                              0 minutos e 0 segundos
                             </Typography>
                           </Typography>
                           </>

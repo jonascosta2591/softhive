@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  ThemeProvider,
+  Box,
+  Card,
+  Button,
+  Typography,
   createTheme,
   CssBaseline,
-  Box,
-  Typography,
-  Button,
-  Card,
   CardContent,
+  ThemeProvider,
   Link as MuiLink,
 } from "@mui/material";
 import axios from "axios";
@@ -422,9 +422,9 @@ function handlePurchase(
   }, 1200);
 
   // Log + redirecionamento
-  // eslint-disable-next-line no-console
+   
   console.log(`Iniciando compra do produto: ${productName}`);
-  window.location.href = "/sign-in";
+  window.location.href = "/register";
 }
 
 export function SoftHivePage() {
@@ -441,7 +441,6 @@ export function SoftHivePage() {
         if (mounted) setProducts(response.data || []);
       })
       .catch((err) => {
-        // eslint-disable-next-line no-console
         console.error("Erro ao carregar softwares:", err);
       });
     return () => {
@@ -467,15 +466,16 @@ export function SoftHivePage() {
               height={44}
             />
           </MuiLink>
-          <Button className="btn-header" disableRipple>
-            <MuiLink
+          <MuiLink
               href="/sign-in"
               underline="none"
               sx={{ color: "rgba(0,31,63,0.95)" }}
             >
-              Login
+              <Button className="btn-header" disableRipple>
+                Login
+              </Button>
             </MuiLink>
-          </Button>
+          
         </Box>
       </Box>
 

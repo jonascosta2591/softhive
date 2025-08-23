@@ -177,7 +177,8 @@ export const customConfig = {
     "import/no-unresolved": "off",
     "@typescript-eslint/consistent-type-imports": "off",
     "consistent-return": "off",
-    "react/jsx-no-useless-fragment": "off"
+    "react/jsx-no-useless-fragment": "off",
+    "react-hooks/exhaustive-deps": "off"
   },
 };
 

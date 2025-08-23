@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -112,6 +112,14 @@ export function SignInView() {
       });
     }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+
+    if(token){
+      window.location.href =  './my-softwares'
+    }
+  })
 
   const handleRegister = useCallback(() => {
     router.push('/register');

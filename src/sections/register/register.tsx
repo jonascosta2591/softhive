@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -27,6 +27,13 @@ export function Register() {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [btnDisabled, setBtnDisabled] = useState<boolean>(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+
+    if(token){
+      window.location.href =  './my-softwares'
+    }
+  })
   // Estado do modal
   const [dialog, setDialog] = useState<{
     open: boolean;

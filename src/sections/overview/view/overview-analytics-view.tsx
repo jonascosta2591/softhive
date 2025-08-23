@@ -19,6 +19,13 @@ type typePrograms = {
 
 
 export function OverviewAnalyticsView() {
+
+  useEffect(() => {
+    const softwareEscolhido = localStorage.getItem('softwareEscolhido')
+    if(softwareEscolhido){
+      window.location.href = `./pagamento?id=${softwareEscolhido}`
+    }
+  })
   const [programas, setProgramas] = useState<any>([])
   useEffect(() => {
     const programasArr: typePrograms[] = [
