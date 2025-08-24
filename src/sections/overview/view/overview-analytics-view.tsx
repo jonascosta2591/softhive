@@ -21,6 +21,14 @@ type typePrograms = {
 export function OverviewAnalyticsView() {
 
   useEffect(() => {
+    const token = localStorage.getItem('token')
+
+    if(!token){
+      window.location.href = "./sign-in"
+    }
+  }, [])
+
+  useEffect(() => {
     const softwareEscolhido = localStorage.getItem('softwareEscolhido')
     if(softwareEscolhido){
       window.location.href = `./pagamento?id=${softwareEscolhido}`

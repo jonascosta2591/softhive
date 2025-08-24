@@ -274,6 +274,14 @@ const Pagamento: React.FC = () => {
     return () => clearTimeout(t);
   }, [total, subtotal]);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+
+    if(!token){
+      window.location.href = "./sign-in"
+    }
+  }, [])
+
   // Handlers para o toggle de visibilidade
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);

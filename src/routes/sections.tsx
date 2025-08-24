@@ -22,6 +22,7 @@ export const Programas = lazy(() => import('src/pages/programas'));
 export const MinhaConta = lazy(() => import('src/pages/minha-conta'));
 export const Pagamento = lazy(() => import('src/pages/pagamento'));
 export const LandingPage = lazy(() => import('src/pages/landing-page'));
+export const Sair = lazy(() => import('src/pages/sair'));
 
 
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
@@ -82,6 +83,14 @@ export const routesSection: RouteObject[] = [
     element: (
       <AuthLayout>
         <UserRegister />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: 'sair',
+    element: (
+      <AuthLayout>
+        <Sair />
       </AuthLayout>
     ),
   },

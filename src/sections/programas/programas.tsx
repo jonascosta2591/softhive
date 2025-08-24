@@ -12,6 +12,15 @@ type typePrograms = {
 }
 
 export function Programas(){
+
+    useEffect(() => {
+        const token = localStorage.getItem('token')
+
+        if(!token){
+            window.location.href = "./sign-in"
+        }
+    }, [])
+
     const [programas, setProgramas] = useState<typePrograms[]>([])
     useEffect(() => {
         const programasArr: typePrograms[] = [
