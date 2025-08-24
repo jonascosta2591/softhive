@@ -112,6 +112,31 @@ const formatCPF = (value: string) => {
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
 };
 
+const formatCEP = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+};
+
+const formatPhoneBR = (value: string) => {
+  const d = value.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 10) {
+    // (99) 9999-9999
+    const p1 = d.slice(0, 2);
+    const p2 = d.slice(2, 6);
+    const p3 = d.slice(6, 10);
+    return d.length <= 2 ? `(${p1}` :
+      d.length <= 6 ? `(${p1}) ${p2}` :
+        `(${p1}) ${p2}-${p3}`;
+  }
+  // (99) 99999-9999
+  const p1 = d.slice(0, 2);
+  const p2 = d.slice(2, 7);
+  const p3 = d.slice(7, 11);
+  return `(${p1}) ${p2}-${p3}`;
+};
+
+
 const currency = (n: number) => `R$ ${n.toFixed(2)}`;
 
 // ===================== TYPES & DATA =====================
@@ -226,7 +251,7 @@ const PaymentMethodCard: React.FC<{
 // ];
 
 const Pagamento: React.FC = () => {
-  const [method, setMethod] = useState<'credit' | 'pix' >('credit');
+  const [method, setMethod] = useState<'credit' | 'pix'>('credit');
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
@@ -237,6 +262,11 @@ const Pagamento: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [cpf, setCpf] = useState('');
+  const [phone, setPhone] = useState('');
+  const [cep, setCep] = useState('');
+  const [address, setAddress] = useState('');
+  const [addressNumber, setAddressNumber] = useState('');
+  const [district, setDistrict] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // Novo estado para visibilidade da senha
@@ -277,7 +307,7 @@ const Pagamento: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('token')
 
-    if(!token){
+    if (!token) {
       window.location.href = "./sign-in"
     }
   }, [])
@@ -296,119 +326,93 @@ const Pagamento: React.FC = () => {
     setPasswordsMatchError(password !== confirmPassword);
   };
 
-const handleSubmitPayment = async () => {
-  if(firstName.length === 0) return alert('Digite seu nome')
-  if(lastName.length === 0) return alert('Digite seu sobrenome')
-  if(cpf.length === 0) return alert('Digite seu CPF')
-  
-  if (method === 'pix') {
-    const IdsSoftwaresEscolhidos = cart.map((c: Product) => c.id)
-    const AuthorizationToken = localStorage.getItem('token')
-    setBtnDisabled(true)
-    try{
-      const response = await axios.post("https://softhive-backend.onrender.com/comprar_software/comprar", {
-        softwaresIds: IdsSoftwaresEscolhidos,
-        paymentMethod: "PIX",
-        paymentUserData: [
-          { name: firstName + ' ' + lastName, cpfCnpj: cpf }
-        ]
-      }, {
-        
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + AuthorizationToken
-        }
-      })
+  const handleSubmitPayment = async () => {
+    if (firstName.length === 0) return alert('Digite seu nome')
+    if (lastName.length === 0) return alert('Digite seu sobrenome')
+    if (cpf.length === 0) return alert('Digite seu CPF')
 
-      if(response.data){
-        setTransactionId(response.data.idTransaction)
-        setImagemPixQrCode(response.data.data[0].encodedImage)
-        setCodigoCopiaEcolaPix(response.data.data[0].payload)
+    if (method === 'pix') {
+      const IdsSoftwaresEscolhidos = cart.map((c: Product) => c.id)
+      const AuthorizationToken = localStorage.getItem('token')
+      setBtnDisabled(true)
+      try {
+        const response = await axios.post("https://softhive-backend.onrender.com/comprar_software/comprar", {
+          softwaresIds: IdsSoftwaresEscolhidos,
+          paymentMethod: "PIX",
+          paymentUserData: [
+            { name: firstName + ' ' + lastName, cpfCnpj: cpf }
+          ]
+        }, {
 
-        //verifica se o pix foi pago, se sim redireciona para página "Meus softwares"
-        setInterval(async () => {
-          try{
-            const responseVerifyTransaction = await axios.get(`https://softhive-backend.onrender.com/payment/payment?paymentId=${response.data.idTransaction}`, {
-              headers: {
-                'Authorization': `Bearer ${AuthorizationToken}`
-              }
-            })
-            if(responseVerifyTransaction.data.status !== 'PENDING'){
-              window.location.href = './my-softwares'
-            }
-            
-          }catch(err){
-            console.log(err)
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + AuthorizationToken
           }
-        }, 3000)
+        })
+
+        if (response.data) {
+          setTransactionId(response.data.idTransaction)
+          setImagemPixQrCode(response.data.data[0].encodedImage)
+          setCodigoCopiaEcolaPix(response.data.data[0].payload)
+
+          //verifica se o pix foi pago, se sim redireciona para página "Meus softwares"
+          setInterval(async () => {
+            try {
+              const responseVerifyTransaction = await axios.get(`https://softhive-backend.onrender.com/payment/payment?paymentId=${response.data.idTransaction}`, {
+                headers: {
+                  'Authorization': `Bearer ${AuthorizationToken}`
+                }
+              })
+              if (responseVerifyTransaction.data.status !== 'PENDING') {
+                window.location.href = './my-softwares'
+              }
+
+            } catch (err) {
+              console.log(err)
+            }
+          }, 3000)
+        }
+      } catch {
+        alert('Ocorreu um erro com a comunicação do servidor, por favor tente novamente')
+        setBtnDisabled(false)
+        location.reload()
       }
-    }catch{
-      alert('Ocorreu um erro com a comunicação do servidor, por favor tente novamente')
-      setBtnDisabled(false)
-      location.reload()
+
+
     }
-
-    
   }
-}
 
-  function HandleCopiarCopiaEcolaPix(){
+  function HandleCopiarCopiaEcolaPix() {
     setTextButtonCopiaECola('Código Copiado')
     navigator.clipboard.writeText(codigoCopiaEcolaPix)
 
     setTimeout(() => {
       setTextButtonCopiaECola('Pagar com código copia e cola')
-  }, 5000)
+    }, 5000)
   }
 
 
-  // Form validation function
   const validate = () => {
+    // Sempre obrigatórios
+    if (!firstName.trim()) { console.error('Por favor, insira seu nome.'); return false; }
+    if (!lastName.trim()) { console.error('Por favor, insira seu sobrenome.'); return false; }
+    if (cpf.replace(/\D/g, '').length !== 11) { console.error('Por favor, insira um CPF válido.'); return false; }
+
     if (method === 'credit') {
       const plain = cardNumber.replace(/\s/g, '');
-      if (plain.length !== 16) {
-        console.error('Por favor, insira um número de cartão válido.');
-        return false;
-      }
-      if (!cardName.trim()) {
-        console.error('Por favor, insira o nome do titular do cartão.');
-        return false;
-      }
-      if (cardExpiry.length !== 5) {
-        console.error('Por favor, insira a validade do cartão (MM/AA).');
-        return false;
-      }
-      if (cardCVV.length < 3) {
-        console.error('Por favor, insira o CVV do cartão.');
-        return false;
-      }
+      if (plain.length !== 16) { console.error('Por favor, insira um número de cartão válido.'); return false; }
+      if (!cardName.trim()) { console.error('Por favor, insira o nome do titular do cartão.'); return false; }
+      if (cardExpiry.length !== 5) { console.error('Por favor, insira a validade do cartão (MM/AA).'); return false; }
+      if (cardCVV.length < 3) { console.error('Por favor, insira o CVV do cartão.'); return false; }
+
+      const phoneDigits = phone.replace(/\D/g, '');
+      if (phoneDigits.length < 10) { console.error('Por favor, insira um telefone válido.'); return false; }
+      if (cep.replace(/\D/g, '').length !== 8) { console.error('Por favor, insira um CEP válido.'); return false; }
+      if (!address.trim()) { console.error('Por favor, insira o endereço.'); return false; }
+      if (!addressNumber.trim()) { console.error('Por favor, insira o número do endereço.'); return false; }
+      if (!district.trim()) { console.error('Por favor, insira o bairro.'); return false; }
     }
-    // Adicionando validação para os novos campos de E-mail e Senha
-    if (!email.trim() || !email.includes('@')) {
-      console.error('Por favor, insira um e-mail válido.');
-      return false;
-    }
-    if (!password.trim() || password.length < 6) {
-      console.error('Por favor, insira uma senha com no mínimo 6 caracteres.');
-      return false;
-    }
-    // Nova validação para a confirmação de senha
-    if (password !== confirmPassword) {
-      console.error('As senhas não coincidem.');
-      return false;
-    }
-    if (!firstName.trim()) {
-      console.error('Por favor, insira seu nome.');
-      return false;
-    }
-    if (!lastName.trim()) {
-      console.error('Por favor, insira seu sobrenome.');
-      return false;
-    }
-    if (cpf.replace(/\D/g, '').length !== 11) {
-      console.error('Por favor, insira um CPF válido.');
-      return false;
-    }
+
     return true;
   };
 
@@ -423,6 +427,12 @@ const handleSubmitPayment = async () => {
 
   const onSubmit: React.FormEventHandler = e => {
     e.preventDefault();
+
+    if (method === 'pix') {
+      // Não processa submit "padrão" no PIX; o botão já chama handleSubmitPayment.
+      return;
+    }
+
     if (!validate()) return;
     setSubmitting(true);
 
@@ -439,19 +449,19 @@ const handleSubmitPayment = async () => {
     const id = params.get("id")
 
     const softwareEscolhido = localStorage.getItem('softwareEscolhido')
-    if(softwareEscolhido){ //Só redireciona a primeira vez
-        localStorage.removeItem('softwareEscolhido')
+    if (softwareEscolhido) { //Só redireciona a primeira vez
+      localStorage.removeItem('softwareEscolhido')
     }
-    
-    axios.get('https://softhive-backend.onrender.com/softwares/softwares', {validateStatus: () => true}).then((response) => {
-        const AvailableSoftwares = response.data
-        setAvaliableProducts(AvailableSoftwares)
 
-        const firstProductSelected = AvailableSoftwares.filter((resp: any) => {
-          if(id === resp.id.toString()) return resp
-        })
+    axios.get('https://softhive-backend.onrender.com/softwares/softwares', { validateStatus: () => true }).then((response) => {
+      const AvailableSoftwares = response.data
+      setAvaliableProducts(AvailableSoftwares)
 
-        setCart(firstProductSelected)
+      const firstProductSelected = AvailableSoftwares.filter((resp: any) => {
+        if (id === resp.id.toString()) return resp
+      })
+
+      setCart(firstProductSelected)
     })
   }, [])
 
@@ -484,13 +494,13 @@ const handleSubmitPayment = async () => {
       const s = String(segundos % 60).padStart(2, '0');
       return `${m} minutos e ${s} segundos`;
     }
-    let tempo = 60 * 60; 
+    let tempo = 60 * 60;
 
     const contador = document.getElementById("contador");
 
     const intervalo = setInterval(() => {
 
-      if(contador){
+      if (contador) {
         contador.textContent = formatarTempo(tempo);
         tempo--;
 
@@ -499,7 +509,7 @@ const handleSubmitPayment = async () => {
           contador.textContent = "Pix Expirado!! Atualize a página e gere outro pix";
         }
       }
-      
+
     }, 1000);
   }, [imagemPixQrCode])
 
@@ -839,34 +849,34 @@ const handleSubmitPayment = async () => {
                           justifyContent: 'center'
                         }}>
                           {imagemPixQrCode && (
-                            <CardMedia 
-                            component="img"
-                            image={`data:image/png;base64,${imagemPixQrCode}`}
-                            alt="QRCODE PIX" 
-                            sx={{
-                              width: 250,   // largura fixa
-                              height: '100%',  // altura fixa
-                              borderRadius: 1
-                            }}
+                            <CardMedia
+                              component="img"
+                              image={`data:image/png;base64,${imagemPixQrCode}`}
+                              alt="QRCODE PIX"
+                              sx={{
+                                width: 250,   // largura fixa
+                                height: '100%',  // altura fixa
+                                borderRadius: 1
+                              }}
                             />
                           )}
                         </Box>
                         {imagemPixQrCode && (
                           <>
-                          <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }}>
-                            Escaneie o QR Code com seu app do banco
-                          </Typography>
-                          <Button onClick={HandleCopiarCopiaEcolaPix} sx={{
-                            backgroundColor: '#00C2E6',
-                            color: "#000"
-                          }}>{textButtonCopiaEcola}</Button>
-
-                          <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }}>
-                            O código Pix expira em:
-                            <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }} id="contador">
-                              0 minutos e 0 segundos
+                            <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }}>
+                              Escaneie o QR Code com seu app do banco
                             </Typography>
-                          </Typography>
+                            <Button onClick={HandleCopiarCopiaEcolaPix} sx={{
+                              backgroundColor: '#00C2E6',
+                              color: "#000"
+                            }}>{textButtonCopiaEcola}</Button>
+
+                            <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }}>
+                              O código Pix expira em:
+                              <Typography sx={{ color: 'var(--text-secondary)', mb: 1 }} id="contador">
+                                0 minutos e 0 segundos
+                              </Typography>
+                            </Typography>
                           </>
                         )}
                         {imagemPixQrCode.length === 0 && (
@@ -878,51 +888,122 @@ const handleSubmitPayment = async () => {
                     )}
 
 
-                    {/* Informações de Cobrança (E-mail foi removido) */}
+                    {/* Informações de Cobrança */}
                     <Box sx={{ mb: 4 }}>
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        spacing={1}
-                        sx={{ mb: 2 }}
-                      >
+                      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                         <Typography variant="h6" fontWeight={600}>
                           Informações de Cobrança
                         </Typography>
                       </Stack>
 
-                      <Box
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                          gap: 2,
-                        }}
-                      >
-                        <TextField
-                          fullWidth
-                          label="Nome"
-                          placeholder="Seu nome"
-                          value={firstName}
-                          onChange={e => setFirstName(e.target.value)}
-                        />
-                        <TextField
-                          fullWidth
-                          label="Sobrenome"
-                          placeholder="Seu sobrenome"
-                          value={lastName}
-                          onChange={e => setLastName(e.target.value)}
-                        />
-                        <TextField
-                          fullWidth
-                          label="CPF"
-                          placeholder="000.000.000-00"
-                          value={cpf}
-                          onChange={e => setCpf(formatCPF(e.target.value))}
-                          inputProps={{ maxLength: 14 }}
-                        />
-                        {/* O campo de e-mail foi removido daqui */}
-                      </Box>
+                      {method === 'credit' ? (
+                        // CARTÃO: todos os campos
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                            gap: 2,
+                          }}
+                        >
+                          <TextField
+                            fullWidth
+                            label="Nome"
+                            placeholder="Seu nome"
+                            value={firstName}
+                            onChange={e => setFirstName(e.target.value)}
+                          />
+                          <TextField
+                            fullWidth
+                            label="Sobrenome"
+                            placeholder="Seu sobrenome"
+                            value={lastName}
+                            onChange={e => setLastName(e.target.value)}
+                          />
+
+                          <TextField
+                            fullWidth
+                            label="Telefone"
+                            placeholder="(00) 00000-0000"
+                            value={phone}
+                            onChange={e => setPhone(formatPhoneBR(e.target.value))}
+                            inputProps={{ maxLength: 15 }}
+                          />
+                          <TextField
+                            fullWidth
+                            label="CEP"
+                            placeholder="00000-000"
+                            value={cep}
+                            onChange={e => setCep(formatCEP(e.target.value))}
+                            inputProps={{ maxLength: 9 }}
+                          />
+
+                          <TextField
+                            fullWidth
+                            label="Endereço"
+                            placeholder="Rua, avenida, etc."
+                            value={address}
+                            onChange={e => setAddress(e.target.value)}
+                          />
+                          <TextField
+                            fullWidth
+                            label="Número"
+                            placeholder="Nº"
+                            value={addressNumber}
+                            onChange={e => setAddressNumber(e.target.value.replace(/\D/g, ''))}
+                            inputProps={{ inputMode: 'numeric' }}
+                          />
+
+                          <TextField
+                            fullWidth
+                            label="Bairro"
+                            placeholder="Seu bairro"
+                            value={district}
+                            onChange={e => setDistrict(e.target.value)}
+                          />
+                          <TextField
+                            fullWidth
+                            label="CPF"
+                            placeholder="000.000.000-00"
+                            value={cpf}
+                            onChange={e => setCpf(formatCPF(e.target.value))}
+                            inputProps={{ maxLength: 14 }}
+                          />
+                        </Box>
+                      ) : (
+                        // PIX: só Nome, Sobrenome e CPF
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                            gap: 2,
+                          }}
+                        >
+                          <TextField
+                            fullWidth
+                            label="Nome"
+                            placeholder="Seu nome"
+                            value={firstName}
+                            onChange={e => setFirstName(e.target.value)}
+                          />
+                          <TextField
+                            fullWidth
+                            label="Sobrenome"
+                            placeholder="Seu sobrenome"
+                            value={lastName}
+                            onChange={e => setLastName(e.target.value)}
+                          />
+                          <TextField
+                            fullWidth
+                            label="CPF"
+                            placeholder="000.000.000-00"
+                            value={cpf}
+                            onChange={e => setCpf(formatCPF(e.target.value))}
+                            inputProps={{ maxLength: 14 }}
+                          />
+                        </Box>
+                      )}
                     </Box>
+
 
                     {/* Submit */}
                     <Button
@@ -1332,4 +1413,3 @@ const handleSubmitPayment = async () => {
 
 export default Pagamento;
 export { Pagamento };
-
