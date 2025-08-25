@@ -146,11 +146,7 @@ export function SignInView() {
         autoComplete="email"
       />
 
-<<<<<<< HEAD
-      <Link variant="body2" color="inherit" sx={{ mb: 1.5 }} href="/esqueceu-senha">
-=======
       <Link variant="body2" color="inherit" sx={{ mb: 1.5 }} href="./esqueci-senha">
->>>>>>> 6cfdac5c3e79b2809b07d04302569031c258e5b7
         Esqueceu sua senha?
       </Link>
 

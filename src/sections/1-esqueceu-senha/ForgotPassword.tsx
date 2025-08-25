@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -89,7 +89,7 @@ export function ForgotPassword() {
       }
 
       // sucesso
-      sessionStorage.setItem('resetEmail', email);
+      localStorage.setItem('email-to-reset', email);
       setCooldown(60);
       setSending(false);
       setBtnDisabled(false);
@@ -115,11 +115,6 @@ export function ForgotPassword() {
         message: 'Verifique sua internet e tente novamente.',
       });
     }
-  };
-
-  const handleResend = async () => {
-    if (cooldown > 0 || sending) return;
-    await handleSend();
   };
 
   return (
