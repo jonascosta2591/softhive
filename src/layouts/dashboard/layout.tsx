@@ -15,6 +15,7 @@ import { _workspaces } from '../nav-config-workspace';
 import { MenuButton } from '../components/menu-button';
 import { HeaderSection } from '../core/header-section';
 import { LayoutSection } from '../core/layout-section';
+import WhatsAppFab from '../components/whatsapp-fab';
 
 import type { MainSectionProps } from '../core/main-section';
 import type { HeaderSectionProps } from '../core/header-section';
@@ -69,6 +70,16 @@ export function DashboardLayout({
     };
 
     return (
+      <>
+      <WhatsAppFab
+        // se preferir, omita props e defina no .env
+        phone="+55 61 99270-9555"
+        message="Oi! Vim pelo site e preciso de uma ajudinha 🙂"
+        // se tiver footer/dock fixo:
+        bottom={28}
+        right={24}
+      />
+
       <HeaderSection
         disableElevation
         layoutQuery={layoutQuery}
@@ -77,6 +88,7 @@ export function DashboardLayout({
         slotProps={merge(headerSlotProps, slotProps?.header?.slotProps ?? {})}
         sx={slotProps?.header?.sx}
       />
+      </>
     );
   };
 

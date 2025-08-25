@@ -15,6 +15,8 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 export const DashboardPage = lazy(() => import('src/pages/dashboard'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
+export const AlterarSenha = lazy(() => import('src/pages/alterar-senha'));
+export const EsqueceuSenha = lazy(() => import('src/pages/esqueceu-senha'));
 
 
 export const UserRegister = lazy(() => import('src/pages/register'));
@@ -83,6 +85,22 @@ export const routesSection: RouteObject[] = [
     element: (
       <AuthLayout>
         <UserRegister />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: 'esqueceu-senha',
+    element: (
+      <AuthLayout>
+        <EsqueceuSenha />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: 'alterar-senha',
+    element: (
+      <AuthLayout>
+        <AlterarSenha />
       </AuthLayout>
     ),
   },
