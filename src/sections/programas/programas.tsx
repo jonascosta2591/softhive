@@ -3,12 +3,15 @@ import { useState, useEffect } from "react"
 import { Grid, Card, Link, Button, CardMedia, TextField, Typography } from "@mui/material"
 
 import { DashboardContent } from "src/layouts/dashboard"
+import axios from 'axios'
 
 type typePrograms = {
     id: number;
-    imgBase64OrLink: string,
-    title: string,
-    price: string
+    name: string;
+    image: string;
+    price: string;
+    category: string;
+    description: string;
 }
 
 export function Programas(){
@@ -23,22 +26,29 @@ export function Programas(){
 
     const [programas, setProgramas] = useState<typePrograms[]>([])
     useEffect(() => {
-        const programasArr: typePrograms[] = [
-            {id: 1, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 2, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 3, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 4, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 5, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 6, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 7, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 8, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 9, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 10, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 11, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 12, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-            {id: 13, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
-        ]
-        setProgramas(programasArr)
+        // const programasArr: typePrograms[] = [
+        //     {id: 1, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 2, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 3, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 4, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 5, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 6, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 7, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 8, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 9, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 10, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 11, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 12, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        //     {id: 13, imgBase64OrLink: './adobe.png', title: 'After effects CC 2025', price: '20'},
+        // ]
+
+        axios.get(`${import.meta.env.VITE_API_URL}/softwares/softwares`).then((response) => {
+            setProgramas(response.data)
+        }).catch((err) => {
+            console.log(err)
+            alert('Ocorreu um erro na comunicação com servidor, por favor reinicie a página!')
+        })
+        
     }, [])
     return (
         <DashboardContent maxWidth="xl">
@@ -52,19 +62,22 @@ export function Programas(){
         </Grid>
 
         <Grid container spacing={3}>
-
+            {programas.length === 0 && (<p>Carregando softwares...</p>)}
             {programas.map((programs, i) => (
-                <Card variant="outlined" sx={{ p: 2 }} key={i}>
+                <Card variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }} key={i}>
                     <CardMedia
                     component="img"
-                    height="200"
-                    image={programs.imgBase64OrLink}
-                    alt="Descrição da imagem"
+                    sx={{
+                        width: '205px',
+                        height: '200px'
+                    }}
+                    image={programs.image}
+                    alt={programs.description}
                     />
-                    <Typography variant="h6">{programs.title}</Typography>
+                    <Typography variant="h6" sx={{width: '200px', height: '60px', textAlign: 'center'}}>{programs.name}</Typography>
                     
-                    <Link href={'http://localhost:3000/buy/' + programs.id} target="_blank" underline="hover">
-                        <Button variant="contained" sx={{ backgroundColor: "#141556", "&:hover": { backgroundColor: "#00A9C4" } }}>Comprar por R$ {programs.price},00</Button>
+                    <Link href={'./pagamento?id=' + programs.id} target="_blank" underline="hover">
+                        <Button variant="contained" sx={{ backgroundColor: "#141556", "&:hover": { backgroundColor: "#00A9C4" } }}>Comprar por R$ {programs.price}</Button>
                     </Link>
                 </Card>
             ))}

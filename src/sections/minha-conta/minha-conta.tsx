@@ -28,7 +28,7 @@ export function MinhaConta(){
 
     useEffect(() => {
         const token = localStorage.getItem('token')
-        axios.get('http://localhost:3001/meus-dados/meus-dados', {
+        axios.get(`${import.meta.env.VITE_API_URL}/meus-dados/meus-dados`, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
@@ -43,7 +43,7 @@ export function MinhaConta(){
             if(senha !== ConfirmSenha) return alert('A confirmação de senha não é igual a senha!')
             if(senha.length < 7) return alert('Sua senha precisa ter mais que 8 caracteres')
 
-            const response = await axios.post('http://localhost:3001/meus-dados/meus-dados', {email, senha, senhaAtual}, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/meus-dados/meus-dados`, {email, senha, senhaAtual}, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },

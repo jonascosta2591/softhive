@@ -67,7 +67,7 @@ export function SignInView() {
       setBtnDisabled(true);
 
       const response = await axios.post(
-        'https://softhive-backend.onrender.com/login/login',
+        `${import.meta.env.VITE_API_URL}/login/login`,
         { email, senha: password },
         { validateStatus: () => true }
       );
@@ -84,6 +84,7 @@ export function SignInView() {
 
       if (response.data?.token) {
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('email', response.data.email)
         setBtnDisabled(false);
 
         const softwareEscolhido = localStorage.getItem('softwareEscolhido');

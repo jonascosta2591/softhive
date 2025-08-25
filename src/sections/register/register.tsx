@@ -97,7 +97,7 @@ export function Register() {
       setBtnDisabled(true);
 
       const response = await axios.post(
-        'https://softhive-backend.onrender.com/registrar/registrar',
+        `${import.meta.env.VITE_API_URL}/registrar/registrar`,
         { email, senha: password },
         { validateStatus: () => true }
       );

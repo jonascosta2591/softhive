@@ -436,7 +436,7 @@ export function SoftHivePage() {
   useEffect(() => {
     let mounted = true;
     axios
-      .get<ProductFromAPI[]>("https://softhive-backend.onrender.com/softwares/softwares")
+      .get<ProductFromAPI[]>(`${import.meta.env.VITE_API_URL}/softwares/softwares`)
       .then((response) => {
         if (mounted) setProducts(response.data || []);
       })

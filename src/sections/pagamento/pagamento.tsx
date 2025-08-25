@@ -251,7 +251,7 @@ const PaymentMethodCard: React.FC<{
 // ];
 
 const Pagamento: React.FC = () => {
-  const [method, setMethod] = useState<'credit' | 'pix'>('credit');
+  const [method, setMethod] = useState<'credit' | 'pix'>('pix');
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
@@ -278,6 +278,8 @@ const Pagamento: React.FC = () => {
   const [codigoCopiaEcolaPix, setCodigoCopiaEcolaPix] = useState<string>('')
   const [textButtonCopiaEcola, setTextButtonCopiaECola] = useState<string>('Pagar com código copia e cola')
   const [transactionId, setTransactionId] = useState<string>('')
+
+  const [statusPayment, setStatusPayment] = useState<string>('')
 
   const [promo, setPromo] = useState('');
   const [cart, setCart] = useState<Product[]>([]);
@@ -336,7 +338,7 @@ const Pagamento: React.FC = () => {
       const AuthorizationToken = localStorage.getItem('token')
       setBtnDisabled(true)
       try {
-        const response = await axios.post("https://softhive-backend.onrender.com/comprar_software/comprar", {
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/comprar_software/comprar`, {
           softwaresIds: IdsSoftwaresEscolhidos,
           paymentMethod: "PIX",
           paymentUserData: [
@@ -358,7 +360,7 @@ const Pagamento: React.FC = () => {
           //verifica se o pix foi pago, se sim redireciona para página "Meus softwares"
           setInterval(async () => {
             try {
-              const responseVerifyTransaction = await axios.get(`https://softhive-backend.onrender.com/payment/payment?paymentId=${response.data.idTransaction}`, {
+              const responseVerifyTransaction = await axios.get(`${import.meta.env.VITE_API_URL}/payment/payment?paymentId=${response.data.idTransaction}`, {
                 headers: {
                   'Authorization': `Bearer ${AuthorizationToken}`
                 }
@@ -379,6 +381,66 @@ const Pagamento: React.FC = () => {
       }
 
 
+    }
+    if (method === 'credit') {
+      const IdsSoftwaresEscolhidos = cart.map((c: Product) => c.id)
+      const AuthorizationToken = localStorage.getItem('token')
+      setBtnDisabled(true)
+
+      try{
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/comprar_software/comprar`, {
+          "softwaresIds": IdsSoftwaresEscolhidos, 
+          "paymentMethod": "Credit Card", 
+          "paymentUserData": [{
+            "holderName": cardName, 
+            "number": cardNumber, 
+            "expiryMonth": cardExpiry.split('/')[0], 
+            "expiryYear": cardExpiry.split('/')[1], 
+            "ccv": cardCVV, 
+            "name": firstName + " " + lastName, 
+            "email": localStorage.getItem('email'), 
+            "cpfCnpj": cpf, 
+            "postalCode": cep, 
+            addressNumber, 
+            phone, 
+            address, 
+            "province": district
+          }]}, {
+            headers: {
+              'Authorization': `Bearer ${AuthorizationToken}`
+            }
+          })
+          const idTransaction = response.data.idTransaction
+
+          const verifyTransaction = setInterval(async () => {
+            try {
+              const responseVerifyTransaction = await axios.get(`${import.meta.env.VITE_API_URL}/payment/payment?paymentId=${idTransaction}`, {
+                headers: {
+                  'Authorization': `Bearer ${AuthorizationToken}`
+                }
+              })
+              if (responseVerifyTransaction.data.status === 'PENDING'){
+                //sua transação está sendo processada, por favor aguarde 15 segundos!!
+                setStatusPayment('Estamos processando seu pagamento, por favor aguarde 1 minuto...')
+              }else if (responseVerifyTransaction.data.status === 'REFUSED' || responseVerifyTransaction.data.status === 'CANCELLED' || responseVerifyTransaction.data.status === 'CHARGEBACK_REQUESTED' || responseVerifyTransaction.data.status === 'CHARGEBACK_DISPUTE'){
+                setStatusPayment('Seu pagamento foi recusado! por favor tente pagar com pix ou com outro cartão!')
+                setBtnDisabled(false)
+                clearInterval(verifyTransaction)
+              }else if (responseVerifyTransaction.data.status === 'CONFIRMED' || responseVerifyTransaction.data.status === 'RECEIVED'){
+                alert('Seu pagamento foi aprovado!, vamos redirecionar você para a página do seu software!')
+                window.location.href = './my-softwares'
+              }
+              console.log('aguardando pagamento ', responseVerifyTransaction.data)
+            } catch (err) {
+              console.log(err)
+            }
+          }, 3000)
+
+
+          console.log(response.data)
+      }catch(err){
+        alert(err)
+      }
     }
   }
 
@@ -453,7 +515,7 @@ const Pagamento: React.FC = () => {
       localStorage.removeItem('softwareEscolhido')
     }
 
-    axios.get('https://softhive-backend.onrender.com/softwares/softwares', { validateStatus: () => true }).then((response) => {
+    axios.get(`${import.meta.env.VITE_API_URL}/softwares/softwares`, { validateStatus: () => true }).then((response) => {
       const AvailableSoftwares = response.data
       setAvaliableProducts(AvailableSoftwares)
 
@@ -553,6 +615,16 @@ const Pagamento: React.FC = () => {
     }
   };
   const removeFromCart = (id: string) => setCart(c => c.filter(p => p.id !== id));
+
+  function processingPaymentComponent() {
+    return (
+      <>
+      <Typography sx={{
+        color: statusPayment.includes('recusado') ? 'red' : '#fff'
+      }}>{statusPayment}</Typography>
+      </>
+    )
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -688,9 +760,9 @@ const Pagamento: React.FC = () => {
                       >
                         <PaymentMethodCard
                           icon={<CreditCardIcon />}
-                          label="Cartão"
+                          label="Cartão(INDISPONÍVEL)"
                           selected={method === 'credit'}
-                          onClick={() => setMethod('credit')}
+                          onClick={() => setMethod('pix')}
                         />
                         <PaymentMethodCard
                           icon={<QrCode2Icon />}
@@ -1033,6 +1105,9 @@ const Pagamento: React.FC = () => {
                           ? 'Pagamento Concluído'
                           : 'Finalizar Compra'}
                     </Button>
+                    {statusPayment && (
+                      processingPaymentComponent()
+                    )}
                   </Box>
 
                   {/* Post-success download block */}
