@@ -31,7 +31,7 @@ const Pulse = styled('span')(() => ({
   width: 64,
   height: 64,
   borderRadius: '50%',
-  background: 'rgba(37, 211, 101, 1)', // verde WhatsApp com alpha
+  background: 'rgba(37, 211, 101, 0.86)', // verde WhatsApp com alpha
   animation: `${ripple} 2.2s ease-out infinite`,
   // dica: se quiser mais discreto, reduza a largura/altura para 56
 }));
