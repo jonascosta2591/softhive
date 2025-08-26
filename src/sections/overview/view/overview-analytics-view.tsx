@@ -78,6 +78,7 @@ export function OverviewAnalyticsView() {
       </Typography>
 
       <Grid container spacing={3}>
+        <Typography>Compre softwares <Link href="./softwares">aqui!</Link></Typography>
         {programas.map((programs: typePrograms) => (
               <Card variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }} key={programs.idsoftwares_para_comprar}>
                 <CardMedia

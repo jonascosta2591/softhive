@@ -758,12 +758,12 @@ const Pagamento: React.FC = () => {
                           gap: 2,
                         }}
                       >
-                        <PaymentMethodCard
+                        {/* <PaymentMethodCard
                           icon={<CreditCardIcon />}
                           label="Cartão(INDISPONÍVEL)"
                           selected={method === 'credit'}
                           onClick={() => setMethod('pix')}
-                        />
+                        /> */}
                         <PaymentMethodCard
                           icon={<QrCode2Icon />}
                           label="PIX"

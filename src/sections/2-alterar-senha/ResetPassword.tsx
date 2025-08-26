@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -18,7 +18,7 @@ type Severity = 'success' | 'error' | 'warning' | 'info';
 export function ResetPassword() {
   const router = useRouter();
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState<string>('');
   const [code, setCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [pwd, setPwd] = useState('');
@@ -43,15 +43,13 @@ export function ResetPassword() {
 
   // Captura email da query ou do sessionStorage (salvo na etapa 1)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const qEmail = params.get('email') || '';
-    const mem = sessionStorage.getItem('resetEmail') || '';
-    setEmail(qEmail || mem);
+    const emailToReset = localStorage.getItem('email-to-reset') || '';
+    setEmail(emailToReset);
   }, []);
 
   // Apenas dígitos e até 6 chars
   const codeMasked = useMemo(
-    () => code.replace(/\D/g, '').slice(0, 6),
+    () => code,
     [code]
   );
 
@@ -59,11 +57,20 @@ export function ResetPassword() {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v).toLowerCase());
 
   const handleConfirm = async () => {
-    if (codeMasked.length !== 6) {
+    const emailToReset = localStorage.getItem('email-to-reset')
+    if (!emailToReset) {
+      openDialog({
+        severity: 'error',
+        title: 'Erro no serivor',
+        message: 'Por favor envie o codigo novamente',
+      });
+      return;
+    }
+    if (codeMasked.length !== 10) {
       openDialog({
         severity: 'error',
         title: 'Código inválido',
-        message: 'O código deve ter 6 dígitos.',
+        message: 'O código deve ter 10 dígitos.',
       });
       return;
     }
@@ -96,17 +103,17 @@ export function ResetPassword() {
       setBtnDisabled(true);
 
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/password/reset`,
-        { email, code: codeMasked, newPassword: pwd },
+        `${import.meta.env.VITE_API_URL}/send-code/valida-code`,
+        { email, code: codeMasked, senha: pwd },
         { validateStatus: () => true }
       );
 
-      if (res.data?.error) {
+      if (res.data.msg === 'Código invalido!') {
         setBtnDisabled(false);
         openDialog({
           severity: 'error',
-          title: 'Não foi possível redefinir',
-          message: String(res.data.error),
+          title: 'Erro de cliente',
+          message: 'Não foi possível redefinir, código invalido',
         });
         return;
       }
@@ -120,7 +127,7 @@ export function ResetPassword() {
           label: 'Ir para o login',
           onClick: () => {
             closeDialog();
-            sessionStorage.removeItem('resetEmail');
+            localStorage.removeItem('email-to-reset');
             router.push('/sign-in');
           },
         },
@@ -157,15 +164,10 @@ export function ResetPassword() {
       
         <TextField
           fullWidth
-          label="Código de verificação (6 dígitos)"
+          label="Código de verificação (10 dígitos)"
           value={codeMasked}
           onChange={(e) => setCode(e.target.value)}
           sx={{ mb: 3 }}
-          inputProps={{
-            inputMode: 'numeric',
-            pattern: '[0-9]*',
-            maxLength: 6,
-          }}
         />
 
         <TextField
