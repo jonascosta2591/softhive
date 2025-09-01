@@ -514,7 +514,10 @@ const Pagamento: React.FC = () => {
     if (softwareEscolhido) { //Só redireciona a primeira vez
       localStorage.removeItem('softwareEscolhido')
     }
-
+    const token = localStorage.getItem('token')
+    if(!token){
+      location.href = `./pagamento-primeira-vez?id=${id}`
+    }
     axios.get(`${import.meta.env.VITE_API_URL}/softwares/softwares`, { validateStatus: () => true }).then((response) => {
       const AvailableSoftwares = response.data
       setAvaliableProducts(AvailableSoftwares)
@@ -524,6 +527,7 @@ const Pagamento: React.FC = () => {
       })
 
       setCart(firstProductSelected)
+      
     })
   }, [])
 

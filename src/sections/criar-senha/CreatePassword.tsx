@@ -22,13 +22,14 @@ export function CreatePassword() {
   const [btnDisabled, setBtnDisabled] = useState(false);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const emailFromUrl = searchParams.get('email');
-    if (emailFromUrl) {
-      setEmail(emailFromUrl);
+    // const searchParams = new URLSearchParams(window.location.search);
+    // const emailFromUrl = searchParams.get('email');
+    const emailFromLocalstorage = localStorage.getItem('email')
+    if (emailFromLocalstorage) {
+      setEmail(emailFromLocalstorage);
     } else {
       // Opcional: Redirecionar se não houver e-mail
-      // window.location.href = '/pagamento';
+      window.location.href = './';
     }
   }, []);
 
@@ -52,14 +53,19 @@ export function CreatePassword() {
     setBtnDisabled(true);
 
     try {
+      // const emailFromLocalstorage = localStorage.getItem('email')
+      const token = localStorage.getItem('token')
       // Substitua pela URL da sua API
-      await axios.post(`${'URL_DA_SUA_API'}/usuario/definir-senha`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/updatePasswordByEmail/update-password`, {
         email,
         senha: password,
-      });
+        senhaAtual: "123456789"
+      }, {headers: {
+        "Authorization": `Bearer ${token}`
+      }});
 
       // Após sucesso, redireciona para o login
-      window.location.href = '/login';
+      window.location.href = '/my-softwares';
 
     } catch (err) {
       console.error(err);

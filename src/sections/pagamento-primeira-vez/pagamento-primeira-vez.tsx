@@ -332,6 +332,39 @@ const PagamentoPrimeiraVez: React.FC = () => {
     if (firstName.length === 0) return alert('Digite seu nome')
     if (lastName.length === 0) return alert('Digite seu sobrenome')
     if (cpf.length === 0) return alert('Digite seu CPF')
+    if (email.length === 0) return alert('Digite seu E-mail')
+    
+    localStorage.setItem('email', email)
+    const id = window.location.search.split('=')[1]
+    
+    try{
+      /**Cadastra email */
+      await axios.post(`${import.meta.env.VITE_API_URL}/registrar_without_password/registrar_without_password`, {email})
+      /**Faz login e retorna token */
+      try{
+        const response2 = await axios.post(`${import.meta.env.VITE_API_URL}/login/login`, {email, "senha": "123456789"})
+
+        if(response2.data.token){
+          /**Salva token no localstorage */
+          localStorage.setItem('token', response2.data.token)
+        }else{
+          return alert('Ocorreu algum erro, por favor tente novamente.')
+        }
+      }catch(err){
+        console.error(err)
+        return alert('Ocorreu algum erro, por favor tente novamente.')
+      }
+      // cria email
+      // salva email no localstorage
+      // faz login, pega token, faz login, e salva o token no localstorage e continua fluxo
+    }catch(err: any){
+      // ja tem conta
+      console.error(err)
+      alert('Parece que você já tem uma conta cadastrada com esse email, vamos redirecionar você para página de login')
+      localStorage.setItem('productId', id)
+      return location.href = "./sign-in"
+      
+    }
 
     if (method === 'pix') {
       const IdsSoftwaresEscolhidos = cart.map((c: Product) => c.id)
@@ -366,7 +399,8 @@ const PagamentoPrimeiraVez: React.FC = () => {
                 }
               })
               if (responseVerifyTransaction.data.status !== 'PENDING') {
-                window.location.href = './my-softwares'
+                window.location.href = "./criar-senha"
+                // window.location.href = './my-softwares'
               }
 
             } catch (err) {
@@ -511,9 +545,15 @@ const PagamentoPrimeiraVez: React.FC = () => {
     const id = params.get("id")
 
     const softwareEscolhido = localStorage.getItem('softwareEscolhido')
-    if (softwareEscolhido) { //Só redireciona a primeira vez
-      localStorage.removeItem('softwareEscolhido')
+
+    const token = localStorage.getItem('token')
+
+    if(token){
+      location.href = `./pagamento?id=${softwareEscolhido}`
     }
+    // if (softwareEscolhido) { //Só redireciona a primeira vez
+    //   localStorage.removeItem('softwareEscolhido')
+    // }
 
     axios.get(`${import.meta.env.VITE_API_URL}/softwares/softwares`, { validateStatus: () => true }).then((response) => {
       const AvailableSoftwares = response.data
@@ -1056,6 +1096,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
                             placeholder="Seu nome"
                             value={firstName}
                             onChange={e => setFirstName(e.target.value)}
+                            required
                           />
                           <TextField
                             fullWidth
@@ -1063,6 +1104,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
                             placeholder="Seu sobrenome"
                             value={lastName}
                             onChange={e => setLastName(e.target.value)}
+                            required
                           />
                           <TextField
                           fullWidth
@@ -1080,6 +1122,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
                             value={cpf}
                             onChange={e => setCpf(formatCPF(e.target.value))}
                             inputProps={{ maxLength: 14 }}
+                            required
                           />
                         </Box>
                       )}

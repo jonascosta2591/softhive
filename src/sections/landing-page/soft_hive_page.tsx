@@ -424,7 +424,7 @@ function handlePurchase(
   // Log + redirecionamento
    
   console.log(`Iniciando compra do produto: ${productName}`);
-  window.location.href = "/register";
+  window.location.href = `/pagamento-primeira-vez?id=${id}`;
 }
 
 export function SoftHivePage() {

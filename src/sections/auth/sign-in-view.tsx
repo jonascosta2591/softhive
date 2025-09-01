@@ -88,13 +88,16 @@ export function SignInView() {
         setBtnDisabled(false);
 
         const softwareEscolhido = localStorage.getItem('softwareEscolhido');
+        const productId = localStorage.getItem('productId')
 
-        if (softwareEscolhido) {
-          router.push(`/pagamento?id=${softwareEscolhido}`);
-        } else {
-          router.push(`/softwares`);
+        if(productId) {
+          return router.push(`/pagamento?id=${productId}`);
         }
-        return;
+        if (softwareEscolhido) {
+          return router.push(`/pagamento?id=${softwareEscolhido}`);
+        } else {
+          return router.push(`/softwares`);
+        }
       }
 
       // Caso inesperado
