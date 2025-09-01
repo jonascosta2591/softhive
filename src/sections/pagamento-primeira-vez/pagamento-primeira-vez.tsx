@@ -1042,7 +1042,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
                           />
                         </Box>
                       ) : (
-                        // PIX: só Nome, Sobrenome e CPF
+                        // PIX: só Nome, Sobrenome, E-mail e CPF
                         <Box
                           sx={{
                             display: 'grid',
@@ -1064,6 +1064,15 @@ const PagamentoPrimeiraVez: React.FC = () => {
                             value={lastName}
                             onChange={e => setLastName(e.target.value)}
                           />
+                          <TextField
+                          fullWidth
+                          type="email"
+                          label="E-mail"
+                          placeholder="seu@email.com"
+                          value={email}
+                          onChange={e => setEmail(e.target.value)}
+                          required
+                        />
                           <TextField
                             fullWidth
                             label="CPF"

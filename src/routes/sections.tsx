@@ -9,6 +9,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
+import { CreatePassword } from 'src/sections/criar-senha';
 
 // ----------------------------------------------------------------------
 
@@ -17,6 +18,7 @@ export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const AlterarSenha = lazy(() => import('src/pages/alterar-senha'));
 export const EsqueceuSenha = lazy(() => import('src/pages/esqueceu-senha'));
+export const CriarSenha = lazy(() => import('src/pages/criar-senha'));
 
 
 export const UserRegister = lazy(() => import('src/pages/register'));
@@ -87,6 +89,14 @@ export const routesSection: RouteObject[] = [
     path: 'pagamento-primeira-vez',
     element: (
       <PagamentoPrimeiraVez />
+    ),
+  },
+  {
+    path: 'criar-senha',
+    element: (
+      <AuthLayout>
+        <CreatePassword />
+      </AuthLayout>
     ),
   },
   {
