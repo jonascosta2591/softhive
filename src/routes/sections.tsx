@@ -23,6 +23,9 @@ export const UserRegister = lazy(() => import('src/pages/register'));
 export const Programas = lazy(() => import('src/pages/programas'));
 export const MinhaConta = lazy(() => import('src/pages/minha-conta'));
 export const Pagamento = lazy(() => import('src/pages/pagamento'));
+
+export const PagamentoPrimeiraVez = lazy(() => import('src/pages/pagamento-primeira-vez'));
+
 export const LandingPage = lazy(() => import('src/pages/landing-page'));
 export const Sair = lazy(() => import('src/pages/sair'));
 
@@ -78,6 +81,12 @@ export const routesSection: RouteObject[] = [
     path: 'pagamento',
     element: (
       <Pagamento />
+    ),
+  },
+  {
+    path: 'pagamento-primeira-vez',
+    element: (
+      <PagamentoPrimeiraVez />
     ),
   },
   {
