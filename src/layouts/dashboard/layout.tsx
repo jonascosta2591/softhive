@@ -73,8 +73,8 @@ export function DashboardLayout({
       <>
       <WhatsAppFab
         // se preferir, omita props e defina no .env
-        phone="+55 61 99270-9555"
-        message="Oi! Vim pelo site e preciso de uma ajudinha 🙂"
+        phone="+55 61 9 9245-4146"
+        message="Oi! Vim pelo site e preciso de uma ajudinha"
         // se tiver footer/dock fixo:
         bottom={28}
         right={24}
