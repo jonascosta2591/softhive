@@ -9,6 +9,9 @@ import {
   CardContent,
   ThemeProvider,
   Link as MuiLink,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import axios from "axios";
 
@@ -312,6 +315,23 @@ const ORIGINAL_CSS = `
   .trust-feature-text h4 { font-size:1rem; font-weight:600; margin-bottom:4px; }
   .trust-feature-text p { font-size:0.875rem; color: var(--text-secondary); margin:0; }
 
+  .testimonials-section { background: var(--surface-secondary); border-bottom: 1px solid var(--border-subtle); }
+  .testimonials-header { text-align: center; max-width: 720px; margin: 0 auto var(--spacing-2xl) auto; }
+  .testimonials-badge { display: inline-block; padding: var(--spacing-xs) var(--spacing-sm); background: var(--surface-primary); border: 1px solid var(--border-subtle); border-radius: 999px; font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
+  .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--spacing-lg); }
+  .testimonial-card { padding: var(--spacing-lg); background: var(--surface-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); transition: all 0.3s ease; }
+  .testimonial-card:hover { transform: translateY(-8px); border-color: var(--border-focus); box-shadow: var(--shadow-medium); }
+  .testimonial-rating { color: #FFC107; margin-bottom: var(--spacing-sm); display: flex; gap: 4px; }
+  .testimonial-text { font-size: 1.1rem; font-style: italic; color: var(--text-primary); margin-bottom: var(--spacing-md); }
+  .testimonial-author { font-weight: 600; color: var(--text-secondary); }
+  .testimonial-author span { font-weight: 400; color: var(--text-muted); display: block; font-size: 0.875rem; }
+
+  .faq-section { background: transparent; }
+  .faq-header { text-align: center; max-width: 720px; margin: 0 auto var(--spacing-2xl) auto; }
+  .faq-badge { display: inline-block; padding: var(--spacing-xs) var(--spacing-sm); background: var(--surface-primary); border: 1px solid var(--border-subtle); border-radius: 999px; font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
+  .faq-container { max-width: 800px; margin: 0 auto; }
+  .faq-container .MuiButtonBase-root:focus { outline: none !important; box-shadow: none !important; background-color: transparent !important; border: none !important; }
+  
   .cta-section { background: linear-gradient(135deg, var(--primary-navy) 0%, #001122 100%); position:relative; overflow:hidden; }
   .cta-section::before { content:''; position:absolute; top:0; right:0; width:50%; height:100%; background: linear-gradient(135deg, transparent 0%, rgba(0, 194, 230, 0.1) 100%); pointer-events:none; }
   .cta-content { text-align:center; max-width:640px; margin:0 auto; position:relative; z-index:2; }
@@ -372,6 +392,7 @@ const ORIGINAL_CSS = `
     :root { --spacing-xs:6px; --spacing-sm:16px; --spacing-md:18px; --spacing-lg:24px; --spacing-xl:36px; --spacing-2xl:48px; --spacing-3xl:72px; }
     .hero { padding-top:80px; }
     .hero-content { padding: 0 10px; }
+    .testimonials-grid { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 320px) {
@@ -390,6 +411,51 @@ type ProductFromAPI = {
   description: string;
 };
 
+// Mock data for new sections
+const testimonials = [
+  {
+    rating: 5,
+    text: "A SoftHive mudou o jogo para mim. Consegui acesso ao Photoshop por um preço justo e sem complicações. A instalação foi limpa e o suporte, nota 10!",
+    author: "Júlia Campos",
+    info: "Designer Gráfica",
+  },
+  {
+    rating: 5,
+    text: "Estava receoso no início, mas a verificação de segurança me deixou tranquilo. O processo de compra e download do CorelDRAW foi imediato. Recomendo!",
+    author: "Marcos Andrade",
+    info: "Ilustrador Freelancer",
+  },
+  {
+    rating: 5,
+    text: "Finalmente uma alternativa acessível e segura às assinaturas caras. O Premiere Pro funciona perfeitamente. Muito obrigado a equipe!",
+    author: "Beatriz Costa",
+    info: "Editora de Vídeo",
+  },
+];
+
+const faqItems = [
+  {
+    question: "A compra do software é um pagamento único?",
+    answer:
+      "Sim! Todos os nossos softwares são de pagamento único. Você compra uma vez e pode usá-lo para sempre, sem mensalidades ou taxas de renovação.",
+  },
+  {
+    question: "Os softwares são seguros e livres de vírus?",
+    answer:
+      "Absolutamente. Nossa prioridade máxima é a segurança. Cada software passa por uma verificação rigorosa com múltiplos antivírus e testes de instalação para garantir que está 100% limpo e seguro. Sem a necessidade de desativar seu antivírus.",
+  },
+  {
+    question: "Como recebo o software após a compra?",
+    answer:
+      "O acesso ao download é imediato. Assim que o pagamento for confirmado, você poderá acessar sua conta, baixar e instalar o seu software.",
+  },
+  {
+    question: "Vocês oferecem suporte técnico se eu tiver problemas?",
+    answer:
+      "Sim, oferecemos suporte técnico especializado. Se você encontrar qualquer dificuldade durante a instalação ou uso do software, nossa equipe estará pronta para ajudar através do nosso WhatsApp: 61 99245-4146",
+  },
+];
+
 function scrollToProducts(): void {
   const el = document.getElementById("products");
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -407,7 +473,7 @@ function handlePurchase(
   const originalHTML = button.innerHTML;
 
   // Feedback visual
-  button.style.background = "#28a745 !important" ;
+  button.style.background = "#28a745 !important";
   button.innerHTML = '<i class="fas fa-check"></i>&nbsp;Processando...';
   button.disabled = true;
 
@@ -422,19 +488,41 @@ function handlePurchase(
   }, 1200);
 
   // Log + redirecionamento
-   
   console.log(`Iniciando compra do produto: ${productName}`);
   window.location.href = `/pagamento-primeira-vez?id=${id}`;
 }
+
+const ExpandIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
 
 export function SoftHivePage() {
   useHeadLinks();
   useAnimations();
 
   const [products, setProducts] = useState<ProductFromAPI[]>([]);
+  const [expandedFaq, setExpandedFaq] = useState<string | false>(false);
 
-  useEffect(() => {
+  const handleFaqChange =
+    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpandedFaq(isExpanded ? panel : false);
+    };
+
+useEffect(() => {
     let mounted = true;
+    
     axios
       .get<ProductFromAPI[]>(`${import.meta.env.VITE_API_URL}/softwares/softwares`)
       .then((response) => {
@@ -443,11 +531,11 @@ export function SoftHivePage() {
       .catch((err) => {
         console.error("Erro ao carregar softwares:", err);
       });
+      
     return () => {
       mounted = false;
     };
   }, []);
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -467,15 +555,14 @@ export function SoftHivePage() {
             />
           </MuiLink>
           <MuiLink
-              href="/sign-in"
-              underline="none"
-              sx={{ color: "rgba(0,31,63,0.95)" }}
-            >
-              <Button className="btn-header" disableRipple>
-                Login
-              </Button>
-            </MuiLink>
-          
+            href="/sign-in"
+            underline="none"
+            sx={{ color: "rgba(0,31,63,0.95)" }}
+          >
+            <Button className="btn-header" disableRipple>
+              Login
+            </Button>
+          </MuiLink>
         </Box>
       </Box>
 
@@ -492,7 +579,10 @@ export function SoftHivePage() {
               segurança total. Downloads verificados, instalação limpa, suporte
               dedicado.
             </Typography>
-            <Button className="btn btn-primary btn-lg" onClick={scrollToProducts}>
+            <Button
+              className="btn btn-primary btn-lg"
+              onClick={scrollToProducts}
+            >
               Ver Softwares Disponíveis
             </Button>
           </Box>
@@ -593,7 +683,11 @@ export function SoftHivePage() {
       </Box>
 
       {/* Products Section */}
-      <Box component="section" className="products-section section" id="products">
+      <Box
+        component="section"
+        className="products-section section"
+        id="products"
+      >
         <Box className="container">
           <Box className="products-header fade-in">
             <Typography component="h2" className="h2 products-title">
@@ -613,7 +707,12 @@ export function SoftHivePage() {
             {products.map((p) => (
               <Card key={p.id} className="card product-card" elevation={0}>
                 <CardContent
-                  sx={{ p: 0, display: "flex", flexDirection: "column", height: "100%" }}
+                  sx={{
+                    p: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                  }}
                 >
                   <Box className="product-header">
                     <Box className="product-icon">
@@ -634,14 +733,20 @@ export function SoftHivePage() {
                   <Box className="product-footer">
                     <Box>
                       <span className="product-price">
-                        {typeof p.price === "number" ? `R$ ${p.price}` : p.price}
+                        {typeof p.price === "number"
+                          ? `R$ ${p.price}`
+                          : p.price}
                       </span>
                     </Box>
                     <Button
                       className="btn btn-primary"
                       onClick={(e) => handlePurchase(e, p.name, p.id)}
                       startIcon={
-                        <Box component="i" className="fas fa-download" aria-hidden />
+                        <Box
+                          component="i"
+                          className="fas fa-download"
+                          aria-hidden
+                        />
                       }
                     >
                       Comprar Agora
@@ -775,6 +880,110 @@ export function SoftHivePage() {
           </Box>
         </Box>
       </Box>
+      
+      {/* Testimonials Section */}
+      <Box component="section" className="testimonials-section section">
+        <Box className="container">
+          <Box className="testimonials-header fade-in">
+            <Box className="testimonials-badge">DEPOIMENTOS</Box>
+            <Typography component="h2" className="h2">
+              Não Acredite Apenas na Nossa Palavra
+            </Typography>
+            <Typography
+              className="body-lg"
+              sx={{ color: "var(--text-secondary)", mt: 2 }}
+            >
+              Veja o que criativos e profissionais como você estão dizendo sobre
+              a SoftHive.
+            </Typography>
+          </Box>
+          <Box className="testimonials-grid fade-in">
+            {testimonials.map((testimonial, index) => (
+              <Box key={index} className="testimonial-card">
+                <Box className="testimonial-rating">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <i key={i} className="fas fa-star" />
+                  ))}
+                </Box>
+                <Typography className="testimonial-text">
+                  &quot;{testimonial.text}&quot;
+                </Typography>
+                <Typography className="testimonial-author">
+                  {testimonial.author}
+                  <span>{testimonial.info}</span>
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* FAQ Section */}
+      <Box component="section" className="faq-section section">
+        <Box className="container">
+          <Box className="faq-header fade-in">
+            <Box className="faq-badge">FAQ</Box>
+            <Typography component="h2" className="h2">
+              Perguntas Frequentes
+            </Typography>
+            <Typography
+              className="body-lg"
+              sx={{ color: "var(--text-secondary)", mt: 2 }}
+            >
+              Tudo o que você precisa saber antes de comprar.
+            </Typography>
+          </Box>
+          <Box className="faq-container fade-in">
+            {faqItems.map((item, index) => (
+              <Accordion
+                key={index}
+                expanded={expandedFaq === `panel${index}`}
+                onChange={handleFaqChange(`panel${index}`)}
+                elevation={0}
+                sx={{
+                  background: "var(--surface-primary)",
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--border-subtle)",
+                  borderRadius: "var(--radius-md) !important",
+                  mb: 2,
+                  "&:before": {
+                    display: "none",
+                  },
+                  "&.Mui-expanded": {
+                    borderColor: "var(--border-focus)",
+                  },
+                }}
+              >
+                <AccordionSummary
+                  disableRipple
+                  expandIcon={<ExpandIcon />}
+                  aria-controls={`panel${index}-content`}
+                  id={`panel${index}-header`}
+                  sx={{
+                    "& .MuiAccordionSummary-expandIconWrapper": {
+                      color: "var(--text-secondary)",
+                      transition: "transform 0.2s",
+                    },
+                    "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {
+                      transform: "rotate(180deg)",
+                      color: "var(--primary-cyan)",
+                    },
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, fontSize: "1.1rem" }}>
+                    {item.question}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography sx={{ color: "var(--text-secondary)" }}>
+                    {item.answer}
+                  </Typography>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </Box>
+        </Box>
+      </Box>
 
       {/* CTA Section */}
       <Box component="section" className="cta-section section">
@@ -787,7 +996,10 @@ export function SoftHivePage() {
               Milhares de profissionais já confiam na SoftHive. Junte-se a eles
               e transforme suas ideias em realidade.
             </Typography>
-            <Button className="btn btn-primary btn-lg" onClick={scrollToProducts}>
+            <Button
+              className="btn btn-primary btn-lg"
+              onClick={scrollToProducts}
+            >
               Escolher Meu Software
             </Button>
           </Box>
@@ -815,3 +1027,4 @@ export function SoftHivePage() {
 }
 
 export default SoftHivePage;
+
