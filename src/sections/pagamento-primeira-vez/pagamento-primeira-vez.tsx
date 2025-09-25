@@ -22,8 +22,9 @@ import {
   GlobalStyles,
   DialogActions,
   DialogContent,
-  ThemeProvider, // Adicionado para o ícone de olho
+  ThemeProvider,
   CircularProgress,
+  MenuItem, // Adicionado para o select de parcelamento e estado
 } from '@mui/material';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -37,14 +38,10 @@ import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 
-// Ícone de erro para o balão de fala
-
-// Substituindo os ícones de 'react-icons' por ícones do Material-UI para resolver o erro.
 import { CreditCard } from '@mui/icons-material';
 import axios from 'axios';
 
 // ===================== THEME =====================
-// Definindo o tema com base nas variáveis CSS do arquivo HTML
 const theme = createTheme({
   typography: {
     fontFamily:
@@ -75,13 +72,13 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
+          backgroundColor: 'rgba(5, 22, 49, 1)',
         },
       },
     },
     MuiTextField: {
       styleOverrides: {
         root: {
-          // Ajusta a largura total para ficar mais parecido com a versão HTML
           width: '100%',
           '& .MuiInputBase-root': {
             borderRadius: '8px',
@@ -121,13 +118,11 @@ const formatCEP = (value: string) => {
 const formatPhoneBR = (value: string) => {
   const d = value.replace(/\D/g, '').slice(0, 11);
   if (d.length <= 10) {
-    // (99) 9999-9999
     const p1 = d.slice(0, 2);
     const p2 = d.slice(2, 6);
     const p3 = d.slice(6, 10);
     return d.length <= 2 ? `(${p1}` : d.length <= 6 ? `(${p1}) ${p2}` : `(${p1}) ${p2}-${p3}`;
   }
-  // (99) 99999-9999
   const p1 = d.slice(0, 2);
   const p2 = d.slice(2, 7);
   const p3 = d.slice(7, 11);
@@ -143,65 +138,8 @@ type Product = {
   category: string;
   description?: string;
   price: number;
-  image: string; // data URI
+  image: string;
 };
-
-// const AVAILABLE_PRODUCTS: Product[] = [
-//   {
-//     id: 'office',
-//     name: 'Microsoft Office',
-//     category: 'Produtividade',
-//     description: 'Suite completa com Word, Excel, PowerPoint e mais',
-//     price: 89.0,
-//     image:
-//       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23D83B01'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='14' font-weight='bold'%3EMS%3C/text%3E%3C/svg%3E",
-//   },
-//   {
-//     id: 'autocad',
-//     name: 'AutoCAD',
-//     category: 'Design e Engenharia',
-//     description: 'Software profissional para desenho técnico e projetos',
-//     price: 129.0,
-//     image:
-//       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23E51937'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='12' font-weight='bold'%3ECAD%3C/text%3E%3C/svg%3E",
-//   },
-//   {
-//     id: 'premiere',
-//     name: 'Adobe Premiere Pro',
-//     category: 'Edição de vídeo',
-//     description: 'Editor de vídeo profissional para criação de conteúdo',
-//     price: 79.0,
-//     image:
-//       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%239999FF'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='14' font-weight='bold'%3EPr%3C/text%3E%3C/svg%3E",
-//   },
-//   {
-//     id: 'illustrator',
-//     name: 'Adobe Illustrator',
-//     category: 'Design gráfico',
-//     description: 'Criação de ilustrações e gráficos vetoriais',
-//     price: 59.0,
-//     image:
-//       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF9A00'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='14' font-weight='bold'%3EAi%3C/text%3E%3C/svg%3E",
-//   },
-//   {
-//     id: 'coreldraw',
-//     name: 'CorelDRAW',
-//     category: 'Design gráfico',
-//     description: 'Suite completa para design gráfico e ilustração',
-//     price: 69.0,
-//     image:
-//       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23239B56'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='12' font-weight='bold'%3ECDR%3C/text%3E%3C/svg%3E",
-//   },
-//   {
-//     id: 'aftereffects',
-//     name: 'Adobe After Effects',
-//     category: 'Motion Graphics',
-//     description: 'Criação de efeitos visuais e animações',
-//     price: 99.0,
-//     image:
-//       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%239999FF'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='14' font-weight='bold'%3EAe%3C/text%3E%3C/svg%3E",
-//   },
-// ];
 
 // ===================== SMALL COMPONENTS =====================
 const PaymentMethodCard: React.FC<{
@@ -234,16 +172,10 @@ const PaymentMethodCard: React.FC<{
   </Box>
 );
 
-// const INITIAL_CART: Product[] = [
-//   {
-//     id: 'photoshop',
-//     name: 'Adobe Photoshop',
-//     category: 'Editor de imagens',
-//     price: 49.0,
-//     image:
-//       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23001F3F'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='%2300C2E6' font-family='Arial' font-size='14' font-weight='bold'%3EPS%3C/text%3E%3C/svg%3E",
-//   },
-// ];
+const brazilianStates = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
+  'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+];
 
 const PagamentoPrimeiraVez: React.FC = () => {
   const [method, setMethod] = useState<'credit' | 'pix'>('pix');
@@ -251,6 +183,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
   const [cardName, setCardName] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCVV, setCardCVV] = useState('');
+  const [installments, setInstallments] = useState(1); // Novo estado
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -261,12 +194,12 @@ const PagamentoPrimeiraVez: React.FC = () => {
   const [cep, setCep] = useState('');
   const [address, setAddress] = useState('');
   const [addressNumber, setAddressNumber] = useState('');
-  const [district, setDistrict] = useState('');
+  const [state, setState] = useState(''); // Novo estado para o estado
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // Novo estado para visibilidade da senha
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Novo estado para visibilidade da confirmação de senha
-  const [passwordsMatchError, setPasswordsMatchError] = useState(false); // Novo estado para o erro de senhas
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordsMatchError, setPasswordsMatchError] = useState(false);
 
   const [btnDisabled, setBtnDisabled] = useState<boolean>(false);
   const [imagemPixQrCode, setImagemPixQrCode] = useState<string>('');
@@ -275,12 +208,9 @@ const PagamentoPrimeiraVez: React.FC = () => {
     'Pagar com código copia e cola'
   );
   const [transactionId, setTransactionId] = useState<string>('');
-
   const [statusPayment, setStatusPayment] = useState<string>('');
-
   const [promo, setPromo] = useState('');
   const [cart, setCart] = useState<Product[]>([]);
-
   const [avaliableProducts, setAvaliableProducts] = useState<Product[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
@@ -289,13 +219,11 @@ const PagamentoPrimeiraVez: React.FC = () => {
   const cardExpiryRef = useRef<HTMLInputElement>(null);
   const cardCVVRef = useRef<HTMLInputElement>(null);
 
-  // Price summary
   const subtotal = useMemo(() => cart.reduce((t, p) => t + p.price, 0), [cart]);
   const discount = 0;
   const taxes = 0;
   const total = subtotal - discount + taxes;
 
-  // Price pulse animation
   const [pulse, setPulse] = useState(false);
   useEffect(() => {
     setPulse(true);
@@ -304,13 +232,8 @@ const PagamentoPrimeiraVez: React.FC = () => {
   }, [total, subtotal]);
 
   useEffect(() => {
-    // const token = localStorage.getItem('token')
-    // if (!token) {
-    //   window.location.href = "./sign-in"
-    // }
   }, []);
 
-  // Handlers para o toggle de visibilidade
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -319,7 +242,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  // Handler para a validação de senhas ao sair do campo
   const handleConfirmPasswordBlur = () => {
     setPasswordsMatchError(password !== confirmPassword);
   };
@@ -334,20 +256,16 @@ const PagamentoPrimeiraVez: React.FC = () => {
     const id = window.location.search.split('=')[1];
 
     try {
-      /**Cadastra email */
       await axios.post(
         `${import.meta.env.VITE_API_URL}/registrar_without_password/registrar_without_password`,
         { email }
       );
-      /**Faz login e retorna token */
       try {
         const response2 = await axios.post(`${import.meta.env.VITE_API_URL}/login/login`, {
           email,
           senha: '123456789',
         });
-
         if (response2.data.token) {
-          /**Salva token no localstorage */
           localStorage.setItem('token', response2.data.token);
         } else {
           return alert('Ocorreu algum erro, por favor tente novamente.');
@@ -356,11 +274,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
         console.error(err);
         return alert('Ocorreu algum erro, por favor tente novamente.');
       }
-      // cria email
-      // salva email no localstorage
-      // faz login, pega token, faz login, e salva o token no localstorage e continua fluxo
     } catch (err: any) {
-      // ja tem conta
       console.error(err);
       alert(
         'Parece que você já tem uma conta cadastrada com esse email, vamos redirecionar você para página de login'
@@ -394,7 +308,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
           setImagemPixQrCode(response.data.data[0].encodedImage);
           setCodigoCopiaEcolaPix(response.data.data[0].payload);
 
-          //verifica se o pix foi pago, se sim redireciona para página "Meus softwares"
           setInterval(async () => {
             try {
               const responseVerifyTransaction = await axios.get(
@@ -407,7 +320,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
               );
               if (responseVerifyTransaction.data.status !== 'PENDING') {
                 window.location.href = './criar-senha';
-                // window.location.href = './my-softwares'
               }
             } catch (err) {
               console.log(err);
@@ -431,6 +343,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
           {
             softwaresIds: IdsSoftwaresEscolhidos,
             paymentMethod: 'Credit Card',
+            installments, // Adicionado
             paymentUserData: [
               {
                 holderName: cardName,
@@ -445,7 +358,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
                 addressNumber,
                 phone,
                 address,
-                province: district,
+                province: state, // Alterado para o novo campo de estado
               },
             ],
           },
@@ -468,7 +381,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
               }
             );
             if (responseVerifyTransaction.data.status === 'PENDING') {
-              //sua transação está sendo processada, por favor aguarde 15 segundos!!
               setStatusPayment('Estamos processando seu pagamento, por favor aguarde 1 minuto...');
             } else if (
               responseVerifyTransaction.data.status === 'REFUSED' ||
@@ -513,7 +425,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
   }
 
   const validate = () => {
-    // Sempre obrigatórios
     if (!firstName.trim()) {
       console.error('Por favor, insira seu nome.');
       return false;
@@ -563,8 +474,8 @@ const PagamentoPrimeiraVez: React.FC = () => {
         console.error('Por favor, insira o número do endereço.');
         return false;
       }
-      if (!district.trim()) {
-        console.error('Por favor, insira o bairro.');
+      if (!state.trim()) {
+        console.error('Por favor, selecione seu estado.');
         return false;
       }
     }
@@ -572,7 +483,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
     return true;
   };
 
-  // Simple brand detection
   const cardBrand = useMemo(() => {
     const v = cardNumber.replace(/\s/g, '');
     if (v.startsWith('4')) return <CreditCard />;
@@ -585,14 +495,12 @@ const PagamentoPrimeiraVez: React.FC = () => {
     e.preventDefault();
 
     if (method === 'pix') {
-      // Não processa submit "padrão" no PIX; o botão já chama handleSubmitPayment.
       return;
     }
 
     if (!validate()) return;
     setSubmitting(true);
 
-    //Envia os produtos com a cc para o backend
     setTimeout(() => {
       setSuccess(true);
       setSubmitting(false);
@@ -610,9 +518,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
     if (token) {
       location.href = `./pagamento?id=${softwareEscolhido}`;
     }
-    // if (softwareEscolhido) { //Só redireciona a primeira vez
-    //   localStorage.removeItem('softwareEscolhido')
-    // }
 
     axios
       .get(`${import.meta.env.VITE_API_URL}/softwares/softwares`, { validateStatus: () => true })
@@ -628,7 +533,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
       });
   }, []);
 
-  // Autofocus chain
   useEffect(() => {
     const node = cardNumberRef.current;
     const handler = (e: Event) => {
@@ -651,7 +555,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
 
   useEffect(() => {
     function formatarTempo(segundos: number) {
-      // const h = String(Math.floor(segundos / 3600)).padStart(2, '0');
       const m = String(Math.floor((segundos % 3600) / 60)).padStart(2, '0');
       const s = String(segundos % 60).padStart(2, '0');
       return `${m} minutos e ${s} segundos`;
@@ -673,7 +576,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
     }, 1000);
   }, [imagemPixQrCode]);
 
-  // Mobile smooth scroll
   useEffect(() => {
     const inputs = Array.from(document.querySelectorAll('input'));
     const small = window.innerWidth <= 768;
@@ -695,7 +597,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
     }
   };
 
-  // Modal helpers
   const openModal = () => {
     setSelected({});
     setModalOpen(true);
@@ -751,7 +652,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
             MozOsxFontSmoothing: 'grayscale',
           },
           a: { color: 'inherit' },
-          // Adicionado para desativar o fundo azul do preenchimento automático
           'input:-webkit-autofill': {
             WebkitBoxShadow: '0 0 0 1000px #00c4e623 inset !important',
             WebkitTextFillColor: 'var(--text-primary)',
@@ -761,7 +661,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
         }}
       />
 
-      {/* HEADER */}
       <AppBar
         position="fixed"
         elevation={2}
@@ -807,26 +706,22 @@ const PagamentoPrimeiraVez: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      {/* MAIN */}
       <Box component="main" sx={{ mt: 10, py: { xs: 4, md: 6 } }}>
         <Container maxWidth="lg">
-          {/* Main content grid: replicate HTML grid-template-columns */}
           <Box
             sx={{
               display: 'grid',
               gridTemplateColumns: {
-                xs: '1fr', // On mobile, just one column
-                md: '1fr 400px', // On desktop, 1fr for form, 400px for summary
+                xs: '1fr',
+                md: '1fr 400px',
               },
               gap: 6,
               alignItems: 'start',
             }}
           >
-            {/* LEFT: FORM */}
             <Box>
               <Card sx={{ p: { xs: 3, md: 4 } }}>
                 <CardContent sx={{ p: 0 }}>
-                  {/* Header */}
                   <Box sx={{ mb: 4 }}>
                     <Typography variant="h4" fontWeight={700} gutterBottom>
                       Finalizar Compra
@@ -836,7 +731,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                     </Typography>
                   </Box>
 
-                  {/* Success */}
                   {success && (
                     <Box sx={{ mb: 2 }}>
                       <Alert
@@ -850,7 +744,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                   )}
 
                   <Box component="form" onSubmit={onSubmit}>
-                    {/* Método de Pagamento */}
                     <Box sx={{ mb: 4 }}>
                       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                         <Typography variant="h6" fontWeight={600}>
@@ -883,7 +776,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                       </Box>
                     </Box>
 
-                    {/* Cartão de Crédito */}
                     {method === 'credit' && (
                       <>
                         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
@@ -943,7 +835,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
                             gridTemplateColumns: {
                               xs: '1fr 120px',
                               sm: '1fr 1fr',
-                              md: '1fr 120px',
+                              md: '1fr 1fr',
                             },
                             gap: 2,
                           }}
@@ -968,6 +860,32 @@ const PagamentoPrimeiraVez: React.FC = () => {
                             inputRef={cardCVVRef}
                             inputProps={{ maxLength: 4 }}
                           />
+                          <TextField
+                            select
+                            fullWidth
+                            label="Parcelamento"
+                            value={installments}
+                            onChange={(e) => setInstallments(Number(e.target.value))}
+                            SelectProps={{
+                              MenuProps: {
+                                PaperProps: {
+                                  sx: {
+                                    border: '1px solid #2f8c9c7e',
+                                    '&::-webkit-scrollbar': {
+                                      width: '8px',
+                                    },
+                                  },
+                                },
+                              },
+                            }}
+                            helperText="Até 4x sem juros"
+                          >
+                            {[1, 2, 3, 4].map((option) => (
+                              <MenuItem key={option} value={option}>
+                                {option}x de {currency(total / option)}
+                              </MenuItem>
+                            ))}
+                          </TextField>
                         </Box>
 
                         <Box
@@ -996,24 +914,8 @@ const PagamentoPrimeiraVez: React.FC = () => {
                       </>
                     )}
 
-                    {/* PIX */}
                     {method === 'pix' && (
                       <Box sx={{ mb: 4, textAlign: 'center', p: 4 }}>
-                        {/* <Box
-                          sx={{
-                            width: 200,
-                            height: 200,
-                            bgcolor: '#fff',
-                            mx: 'auto',
-                            mb: 2,
-                            borderRadius: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <QrCode2Icon sx={{ fontSize: 64, color: '#333' }} />
-                        </Box> */}
                         <Box
                           sx={{
                             display: 'flex',
@@ -1027,8 +929,8 @@ const PagamentoPrimeiraVez: React.FC = () => {
                               image={`data:image/png;base64,${imagemPixQrCode}`}
                               alt="QRCODE PIX"
                               sx={{
-                                width: 250, // largura fixa
-                                height: '100%', // altura fixa
+                                width: 250,
+                                height: '100%',
                                 borderRadius: 1,
                               }}
                             />
@@ -1068,7 +970,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                       </Box>
                     )}
 
-                    {/* Informações de Cobrança */}
                     <Box sx={{ mb: 4 }}>
                       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                         <Typography variant="h6" fontWeight={600}>
@@ -1077,7 +978,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                       </Stack>
 
                       {method === 'credit' ? (
-                        // CARTÃO: todos os campos
                         <Box
                           sx={{
                             display: 'grid',
@@ -1134,12 +1034,43 @@ const PagamentoPrimeiraVez: React.FC = () => {
                           />
 
                           <TextField
+                            select
                             fullWidth
-                            label="Bairro"
-                            placeholder="Seu bairro"
-                            value={district}
-                            onChange={(e) => setDistrict(e.target.value)}
-                          />
+                            label="Estado"
+                            placeholder="Selecione seu estado"
+                            value={state}
+                            onChange={(e) => setState(e.target.value)}
+                            required
+                            SelectProps={{
+                              MenuProps: {
+                                PaperProps: {
+                                  sx: {
+                                    maxWidth: 250,
+                                    maxHeight: 200,
+                                    border: '1px solid #2f8c9c7e', // Adiciona uma borda ciano
+                                    // Estiliza a barra de rolagem para navegadores WebKit (Chrome, Safari)
+                                    '&::-webkit-scrollbar': {
+                                      width: '8px', // Largura da barra de rolagem
+                                    },
+                                    '&::-webkit-scrollbar-track': {
+                                      background: 'rgba(255, 255, 255, 0.1)', // Fundo da trilha
+                                    },
+                                    '&::-webkit-scrollbar-thumb': {
+                                      backgroundColor: '#00C2E6', // Cor do "polegar"
+                                      borderRadius: '10px', // Bordas arredondadas para o "polegar"
+                                      border: '2px solid rgba(0,8,20,0.95)', // Borda que cria o espaçamento
+                                    },
+                                  },
+                                },
+                              },
+                            }}
+                          >
+                            {brazilianStates.map((uf) => (
+                              <MenuItem key={uf} value={uf}>
+                                {uf}
+                              </MenuItem>
+                            ))}
+                          </TextField>
                           <TextField
                             fullWidth
                             label="CPF"
@@ -1150,7 +1081,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                           />
                         </Box>
                       ) : (
-                        // PIX: só Nome, Sobrenome, E-mail e CPF
                         <Box
                           sx={{
                             display: 'grid',
@@ -1196,7 +1126,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                       )}
                     </Box>
 
-                    {/* Submit */}
                     <Button
                       type="submit"
                       variant="contained"
@@ -1223,7 +1152,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                     {statusPayment && processingPaymentComponent()}
                   </Box>
 
-                  {/* Post-success download block */}
                   {success && (
                     <Box sx={{ mt: 3, textAlign: 'center' }}>
                       <Alert
@@ -1242,7 +1170,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
               </Card>
             </Box>
 
-            {/* RIGHT: SUMMARY (coluna de 400px/"sticky") */}
             <Box>
               <Card
                 sx={{
@@ -1257,7 +1184,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                     Resumo do Pedido
                   </Typography>
 
-                  {/* Product list (first item pre-filled) */}
                   {cart.map((p, idx) => (
                     <Box
                       key={p.id}
@@ -1334,7 +1260,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                     Adicionar mais produtos
                   </Button>
 
-                  {/* Promo code */}
                   <Box
                     sx={{
                       mb: 2,
@@ -1359,7 +1284,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                     </Button>
                   </Box>
 
-                  {/* Breakdown */}
                   <Divider sx={{ my: 2 }} />
                   <Stack spacing={1}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1377,28 +1301,35 @@ const PagamentoPrimeiraVez: React.FC = () => {
                       <Typography>{currency(0)}</Typography>
                     </Box>
                     <Divider />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography
-                        variant="h6"
-                        fontWeight={700}
-                        sx={{ color: 'var(--primary-cyan)' }}
-                      >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <Typography variant="h6" fontWeight={700} sx={{ color: 'var(--primary-cyan)' }}>
                         Total
                       </Typography>
-                      <Typography
-                        variant="h6"
-                        fontWeight={700}
-                        sx={{
-                          color: 'var(--primary-cyan)',
-                          transform: pulse ? 'scale(1.05)' : 'none',
-                        }}
-                      >
-                        {currency(total)}
-                      </Typography>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography
+                          variant="h6"
+                          fontWeight={700}
+                          sx={{
+                            color: 'var(--primary-cyan)',
+                            transform: pulse ? 'scale(1.05)' : 'none',
+                          }}
+                        >
+                          {currency(total)}
+                        </Typography>
+                        {method === 'credit' && installments > 1 && (
+                          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                            Em {installments}x de {currency(total / installments)}
+                          </Typography>
+                        )}
+                        {method === 'credit' && installments === 1 && (
+                          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                            À vista
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
                   </Stack>
 
-                  {/* Perks */}
                   <Box sx={{ mt: 2 }}>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                       <DownloadIcon sx={{ color: 'var(--primary-cyan)' }} />
@@ -1420,7 +1351,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
         </Container>
       </Box>
 
-      {/* PRODUCTS MODAL */}
       <Dialog
         open={modalOpen}
         onClose={closeModal}
@@ -1433,7 +1363,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
             backdropFilter: 'blur(20px)',
           },
         }}
-        // Estilos para o overlay do modal
         slotProps={{
           backdrop: {
             sx: {
@@ -1491,7 +1420,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                         boxShadow: '0 8px 25px rgba(0,194,230,0.15)',
                       },
                       position: 'relative',
-                      // Garante que todos os cards tenham a mesma altura
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
@@ -1541,19 +1469,14 @@ const PagamentoPrimeiraVez: React.FC = () => {
           </Box>
         </DialogContent>
         <DialogActions
-          // Usando Stack para o layout responsivo
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
             borderTop: '1px solid var(--border-subtle)',
             p: 2,
-            // Adicionando padding para alinhamento e respiro
             flexDirection: { xs: 'column', sm: 'row' },
-            // Em telas pequenas (xs), o layout é em coluna
             gap: { xs: 2, sm: 0 },
-            // Adicionando espaçamento entre os botões em telas pequenas
             alignItems: { sm: 'center' },
-            // Alinha o texto à esquerda em telas pequenas
           }}
         >
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
@@ -1561,7 +1484,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
             {Object.values(selected).filter(Boolean).length !== 1 ? 's' : ''} selecionado
             {Object.values(selected).filter(Boolean).length !== 1 ? 's' : ''}
           </Typography>
-          {/* O Box foi substituído por um Stack para alinhamento dos botões */}
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={1}
