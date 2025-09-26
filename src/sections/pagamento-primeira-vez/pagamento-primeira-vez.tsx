@@ -10,6 +10,7 @@ import {
   Divider,
   Toolbar,
   Checkbox,
+  MenuItem, // Adicionado para o select de parcelamento e estado
   Container,
   TextField,
   CardMedia,
@@ -24,7 +25,6 @@ import {
   DialogContent,
   ThemeProvider,
   CircularProgress,
-  MenuItem, // Adicionado para o select de parcelamento e estado
 } from '@mui/material';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -173,8 +173,33 @@ const PaymentMethodCard: React.FC<{
 );
 
 const brazilianStates = [
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
-  'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+  'AC',
+  'AL',
+  'AP',
+  'AM',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MT',
+  'MS',
+  'MG',
+  'PA',
+  'PB',
+  'PR',
+  'PE',
+  'PI',
+  'RJ',
+  'RN',
+  'RS',
+  'RO',
+  'RR',
+  'SC',
+  'SP',
+  'SE',
+  'TO',
 ];
 
 const PagamentoPrimeiraVez: React.FC = () => {
@@ -231,8 +256,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
     return () => clearTimeout(t);
   }, [total, subtotal]);
 
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -277,7 +301,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
     } catch (err: any) {
       console.error(err);
       alert(
-        'Parece que você já tem uma conta cadastrada com esse email, vamos redirecionar você para página de login'
+        'Parece que você já tem uma conta cadastrada com esse email, faça login e tente pagar novamente! caso não consiga acessar sua conta por favor altere sua senha!'
       );
       localStorage.setItem('productId', id);
       return (location.href = './sign-in');
@@ -347,15 +371,22 @@ const PagamentoPrimeiraVez: React.FC = () => {
             paymentUserData: [
               {
                 holderName: cardName,
-                number: cardNumber,
+                number: cardNumber
+                  .replace(' ', '')
+                  .replace(' ', '')
+                  .replace(' ', '')
+                  .replace(' ', ''),
                 expiryMonth: cardExpiry.split('/')[0],
                 expiryYear: cardExpiry.split('/')[1],
                 ccv: cardCVV,
-                name: firstName + ' ' + lastName,
+                parcelamento: installments,
+                name: firstName,
+                lastname: lastName,
                 email: localStorage.getItem('email'),
                 cpfCnpj: cpf,
                 postalCode: cep,
                 addressNumber,
+                state,
                 phone,
                 address,
                 province: state, // Alterado para o novo campo de estado
@@ -369,46 +400,73 @@ const PagamentoPrimeiraVez: React.FC = () => {
           }
         );
         const idTransaction = response.data.idTransaction;
-
-        const verifyTransaction = setInterval(async () => {
-          try {
-            const responseVerifyTransaction = await axios.get(
-              `${import.meta.env.VITE_API_URL}/payment/payment?paymentId=${idTransaction}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${AuthorizationToken}`,
-                },
-              }
-            );
-            if (responseVerifyTransaction.data.status === 'PENDING') {
-              setStatusPayment('Estamos processando seu pagamento, por favor aguarde 1 minuto...');
-            } else if (
-              responseVerifyTransaction.data.status === 'REFUSED' ||
-              responseVerifyTransaction.data.status === 'CANCELLED' ||
-              responseVerifyTransaction.data.status === 'CHARGEBACK_REQUESTED' ||
-              responseVerifyTransaction.data.status === 'CHARGEBACK_DISPUTE'
-            ) {
-              setStatusPayment(
-                'Seu pagamento foi recusado! por favor tente pagar com pix ou com outro cartão!'
-              );
-              setBtnDisabled(false);
-              clearInterval(verifyTransaction);
-            } else if (
-              responseVerifyTransaction.data.status === 'CONFIRMED' ||
-              responseVerifyTransaction.data.status === 'RECEIVED'
-            ) {
-              alert(
-                'Seu pagamento foi aprovado!, vamos redirecionar você para a página do seu software!'
-              );
-              window.location.href = './my-softwares';
-            }
-            console.log('aguardando pagamento ', responseVerifyTransaction.data);
-          } catch (err) {
-            console.log(err);
-          }
-        }, 3000);
-
         console.log(response.data);
+        alert(response.data.data[0].text);
+        if (response.data.data[0].text) {
+          setBtnDisabled(false);
+        }
+        if (response.data.data[0].success === true) {
+          setInterval(async () => {
+            try {
+              const responseVerifyTransaction = await axios.get(
+                `${import.meta.env.VITE_API_URL}/payment/payment?paymentId=${idTransaction}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${AuthorizationToken}`,
+                  },
+                }
+              );
+              if (responseVerifyTransaction.data.status === 'APPROVED') {
+                //sua transação está sendo processada, por favor aguarde 15 segundos!!
+                setStatusPayment(
+                  'Seu pagamento foi aprovado, vamos redirecionar você para a pagina dos softwares'
+                );
+                window.location.href = './criar-senha';
+              }
+            } catch (err) {
+              console.log(err);
+            }
+          }, 1000);
+        }
+        //
+
+        // const verifyTransaction = setInterval(async () => {
+        //   try {
+        //     const responseVerifyTransaction = await axios.get(
+        //       `${import.meta.env.VITE_API_URL}/payment/payment?paymentId=${idTransaction}`,
+        //       {
+        //         headers: {
+        //           Authorization: `Bearer ${AuthorizationToken}`,
+        //         },
+        //       }
+        //     );
+        //     if (responseVerifyTransaction.data.status === 'PENDING') {
+        //       setStatusPayment('Estamos processando seu pagamento, por favor aguarde 1 minuto...');
+        //     } else if (
+        //       responseVerifyTransaction.data.status === 'REFUSED' ||
+        //       responseVerifyTransaction.data.status === 'CANCELLED' ||
+        //       responseVerifyTransaction.data.status === 'CHARGEBACK_REQUESTED' ||
+        //       responseVerifyTransaction.data.status === 'CHARGEBACK_DISPUTE'
+        //     ) {
+        //       setStatusPayment(
+        //         'Seu pagamento foi recusado! por favor tente pagar com pix ou com outro cartão!'
+        //       );
+        //       setBtnDisabled(false);
+        //       clearInterval(verifyTransaction);
+        //     } else if (
+        //       responseVerifyTransaction.data.status === 'CONFIRMED' ||
+        //       responseVerifyTransaction.data.status === 'RECEIVED'
+        //     ) {
+        //       alert(
+        //         'Seu pagamento foi aprovado!, vamos redirecionar você para a página do seu software!'
+        //       );
+        //       window.location.href = './criar-senha';
+        //     }
+        //     console.log('aguardando pagamento ', responseVerifyTransaction.data);
+        //   } catch (err) {
+        //     console.log(err);
+        //   }
+        // }, 3000);
       } catch (err) {
         alert(err);
       }
@@ -1010,6 +1068,13 @@ const PagamentoPrimeiraVez: React.FC = () => {
                           />
                           <TextField
                             fullWidth
+                            label="E-mail"
+                            placeholder="email@gmail.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                          />
+                          <TextField
+                            fullWidth
                             label="CEP"
                             placeholder="00000-000"
                             value={cep}
@@ -1143,11 +1208,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
                       onClick={handleSubmitPayment}
                       disabled={btnDisabled}
                     >
-                      {submitting
-                        ? 'Processando pagamento...'
-                        : success
-                          ? 'Pagamento Concluído'
-                          : 'Finalizar Compra'}
+                      Finalizar Compra
                     </Button>
                     {statusPayment && processingPaymentComponent()}
                   </Box>
@@ -1301,8 +1362,18 @@ const PagamentoPrimeiraVez: React.FC = () => {
                       <Typography>{currency(0)}</Typography>
                     </Box>
                     <Divider />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                      <Typography variant="h6" fontWeight={700} sx={{ color: 'var(--primary-cyan)' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-end',
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        fontWeight={700}
+                        sx={{ color: 'var(--primary-cyan)' }}
+                      >
                         Total
                       </Typography>
                       <Box sx={{ textAlign: 'right' }}>

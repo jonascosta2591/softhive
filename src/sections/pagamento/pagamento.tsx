@@ -1,4 +1,5 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import {
   Box,
   Card,
@@ -10,6 +11,7 @@ import {
   Divider,
   Toolbar,
   Checkbox,
+  MenuItem,
   Container,
   TextField,
   CardMedia,
@@ -75,6 +77,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
+          backgroundColor: 'rgba(5, 22, 49, 1)',
         },
       },
     },
@@ -234,6 +237,36 @@ const PaymentMethodCard: React.FC<{
   </Box>
 );
 
+const brazilianStates = [
+  'AC',
+  'AL',
+  'AP',
+  'AM',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MT',
+  'MS',
+  'MG',
+  'PA',
+  'PB',
+  'PR',
+  'PE',
+  'PI',
+  'RJ',
+  'RN',
+  'RS',
+  'RO',
+  'RR',
+  'SC',
+  'SP',
+  'SE',
+  'TO',
+];
+
 // const INITIAL_CART: Product[] = [
 //   {
 //     id: 'photoshop',
@@ -251,16 +284,19 @@ const Pagamento: React.FC = () => {
   const [cardName, setCardName] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCVV, setCardCVV] = useState('');
+  const [installments, setInstallments] = useState(1); // Novo estado
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [recaptcha, setRecaptcha] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [cpf, setCpf] = useState('');
   const [phone, setPhone] = useState('');
   const [cep, setCep] = useState('');
   const [address, setAddress] = useState('');
   const [addressNumber, setAddressNumber] = useState('');
+  const [state, setState] = useState(''); // Novo estado para o estado
   const [district, setDistrict] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -391,21 +427,29 @@ const Pagamento: React.FC = () => {
           {
             softwaresIds: IdsSoftwaresEscolhidos,
             paymentMethod: 'Credit Card',
+            installments, // Adicionado
             paymentUserData: [
               {
                 holderName: cardName,
-                number: cardNumber,
+                number: cardNumber
+                  .replace(' ', '')
+                  .replace(' ', '')
+                  .replace(' ', '')
+                  .replace(' ', ''),
                 expiryMonth: cardExpiry.split('/')[0],
                 expiryYear: cardExpiry.split('/')[1],
                 ccv: cardCVV,
-                name: firstName + ' ' + lastName,
+                parcelamento: installments,
+                name: firstName,
+                lastname: lastName,
                 email: localStorage.getItem('email'),
                 cpfCnpj: cpf,
                 postalCode: cep,
                 addressNumber,
+                state,
                 phone,
                 address,
-                province: district,
+                province: state, // Alterado para o novo campo de estado
               },
             ],
           },
@@ -416,45 +460,36 @@ const Pagamento: React.FC = () => {
           }
         );
         const idTransaction = response.data.idTransaction;
-
-        // const verifyTransaction = setInterval(async () => {
-        //   try {
-        //     const responseVerifyTransaction = await axios.get(
-        //       `${import.meta.env.VITE_API_URL}/payment/payment?paymentId=${idTransaction}`,
-        //       {
-        //         headers: {
-        //           Authorization: `Bearer ${AuthorizationToken}`,
-        //         },
-        //       }
-        //     );
-        //     if (responseVerifyTransaction.data.status === 'PENDING') {
-        //       //sua transação está sendo processada, por favor aguarde 15 segundos!!
-        //       setStatusPayment('Estamos processando seu pagamento, por favor aguarde 1 minuto...');
-        //     } else if (
-        //       responseVerifyTransaction.data.status === 'REFUSED' ||
-        //       responseVerifyTransaction.data.status === 'CANCELLED' ||
-        //       responseVerifyTransaction.data.status === 'CHARGEBACK_REQUESTED' ||
-        //       responseVerifyTransaction.data.status === 'CHARGEBACK_DISPUTE'
-        //     ) {
-        //       setStatusPayment(
-        //         'Seu pagamento foi recusado! por favor tente pagar com pix ou com outro cartão!'
-        //       );
-        //       setBtnDisabled(false);
-        //       clearInterval(verifyTransaction);
-        //     } else if (
-        //       responseVerifyTransaction.data.status === 'CONFIRMED' ||
-        //       responseVerifyTransaction.data.status === 'RECEIVED'
-        //     ) {
-        //       alert(
-        //         'Seu pagamento foi aprovado!, vamos redirecionar você para a página do seu software!'
-        //       );
-        //       window.location.href = './my-softwares';
-        //     }
-        //     console.log('aguardando pagamento ', responseVerifyTransaction.data);
-        //   } catch (err) {
-        //     console.log(err);
-        //   }
-        // }, 3000);
+        console.log(response.data);
+        alert(response.data.data[0].text);
+        if (response.data.data[0].text) {
+          setBtnDisabled(false);
+        }
+        if (response.data.data[0].success === true) {
+          setInterval(async () => {
+            try {
+              const responseVerifyTransaction = await axios.get(
+                `${import.meta.env.VITE_API_URL}/payment/payment?paymentId=${idTransaction}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${AuthorizationToken}`,
+                  },
+                }
+              );
+              if (responseVerifyTransaction.data.status === 'APPROVED') {
+                //sua transação está sendo processada, por favor aguarde 15 segundos!!
+                setStatusPayment(
+                  'Seu pagamento foi aprovado, vamos redirecionar você para a pagina dos softwares'
+                );
+                window.location.href = './my-softwares';
+              }
+            } catch (err) {
+              console.log(err);
+            }
+          }, 1000);
+        }
+        // window.location.href = './my-softwares';
+        // const idTransaction = response.data.idTransaction;
 
         console.log(response.data);
       } catch (err) {
@@ -525,6 +560,10 @@ const Pagamento: React.FC = () => {
       }
       if (!district.trim()) {
         console.error('Por favor, insira o bairro.');
+        return false;
+      }
+      if (!state.trim()) {
+        console.error('Por favor, selecione seu estado.');
         return false;
       }
     }
@@ -680,6 +719,11 @@ const Pagamento: React.FC = () => {
         </Typography>
       </>
     );
+  }
+
+  function onSetRecaptcha(value: any) {
+    alert(value);
+    // setRecaptcha(value);
   }
 
   return (
@@ -901,7 +945,7 @@ const Pagamento: React.FC = () => {
                             gridTemplateColumns: {
                               xs: '1fr 120px',
                               sm: '1fr 1fr',
-                              md: '1fr 120px',
+                              md: '1fr 1fr',
                             },
                             gap: 2,
                           }}
@@ -926,6 +970,32 @@ const Pagamento: React.FC = () => {
                             inputRef={cardCVVRef}
                             inputProps={{ maxLength: 4 }}
                           />
+                          <TextField
+                            select
+                            fullWidth
+                            label="Parcelamento"
+                            value={installments}
+                            onChange={(e) => setInstallments(Number(e.target.value))}
+                            SelectProps={{
+                              MenuProps: {
+                                PaperProps: {
+                                  sx: {
+                                    border: '1px solid #2f8c9c7e',
+                                    '&::-webkit-scrollbar': {
+                                      width: '8px',
+                                    },
+                                  },
+                                },
+                              },
+                            }}
+                            helperText="Até 4x sem juros"
+                          >
+                            {[1, 2, 3, 4].map((option) => (
+                              <MenuItem key={option} value={option}>
+                                {option}x de {currency(total / option)}
+                              </MenuItem>
+                            ))}
+                          </TextField>
                         </Box>
 
                         <Box
@@ -1092,6 +1162,45 @@ const Pagamento: React.FC = () => {
                           />
 
                           <TextField
+                            select
+                            fullWidth
+                            label="Estado"
+                            placeholder="Selecione seu estado"
+                            value={state}
+                            onChange={(e) => setState(e.target.value)}
+                            required
+                            SelectProps={{
+                              MenuProps: {
+                                PaperProps: {
+                                  sx: {
+                                    maxWidth: 250,
+                                    maxHeight: 200,
+                                    border: '1px solid #2f8c9c7e', // Adiciona uma borda ciano
+                                    // Estiliza a barra de rolagem para navegadores WebKit (Chrome, Safari)
+                                    '&::-webkit-scrollbar': {
+                                      width: '8px', // Largura da barra de rolagem
+                                    },
+                                    '&::-webkit-scrollbar-track': {
+                                      background: 'rgba(255, 255, 255, 0.1)', // Fundo da trilha
+                                    },
+                                    '&::-webkit-scrollbar-thumb': {
+                                      backgroundColor: '#00C2E6', // Cor do "polegar"
+                                      borderRadius: '10px', // Bordas arredondadas para o "polegar"
+                                      border: '2px solid rgba(0,8,20,0.95)', // Borda que cria o espaçamento
+                                    },
+                                  },
+                                },
+                              },
+                            }}
+                          >
+                            {brazilianStates.map((uf) => (
+                              <MenuItem key={uf} value={uf}>
+                                {uf}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+
+                          <TextField
                             fullWidth
                             label="Bairro"
                             placeholder="Seu bairro"
@@ -1105,6 +1214,11 @@ const Pagamento: React.FC = () => {
                             value={cpf}
                             onChange={(e) => setCpf(formatCPF(e.target.value))}
                             inputProps={{ maxLength: 14 }}
+                          />
+                          {/* CAPTCHA */}
+                          <ReCAPTCHA
+                            sitekey="6LcuGdYrAAAAAFqMIuVtD-4-jyvgAiVoqzk22cD1"
+                            onChange={(value: any) => onSetRecaptcha(value)}
                           />
                         </Box>
                       ) : (
@@ -1323,14 +1437,7 @@ const Pagamento: React.FC = () => {
                       <Typography>{currency(0)}</Typography>
                     </Box>
                     <Divider />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography
-                        variant="h6"
-                        fontWeight={700}
-                        sx={{ color: 'var(--primary-cyan)' }}
-                      >
-                        Total
-                      </Typography>
+                    <Box sx={{ textAlign: 'right' }}>
                       <Typography
                         variant="h6"
                         fontWeight={700}
@@ -1341,6 +1448,16 @@ const Pagamento: React.FC = () => {
                       >
                         {currency(total)}
                       </Typography>
+                      {method === 'credit' && installments > 1 && (
+                        <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                          Em {installments}x de {currency(total / installments)}
+                        </Typography>
+                      )}
+                      {method === 'credit' && installments === 1 && (
+                        <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                          À vista
+                        </Typography>
+                      )}
                     </Box>
                   </Stack>
 

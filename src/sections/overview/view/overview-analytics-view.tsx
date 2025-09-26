@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Button from '@mui/material/Button';
-import { CardMedia, Skeleton, CircularProgress, LinearProgress, Alert, Stack } from '@mui/material';
+import { Alert, Stack, Skeleton, CardMedia, LinearProgress, CircularProgress } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
 
@@ -27,8 +27,8 @@ export function OverviewAnalyticsView() {
   }, []);
 
   useEffect(() => {
-    const softwareEscolhido = localStorage.getItem('softwareEscolhido');
-    if (softwareEscolhido) window.location.href = `./pagamento?id=${softwareEscolhido}`;
+    // const softwareEscolhido = localStorage.getItem('softwareEscolhido');
+    // if (softwareEscolhido) window.location.href = `./pagamento?id=${softwareEscolhido}`;
   }, []);
 
   const [programas, setProgramas] = useState<typePrograms[]>([]);
@@ -67,9 +67,9 @@ export function OverviewAnalyticsView() {
 
   const brand = { primary: '#141556', hover: '#00A9C4' };
 
-  const CARD_W = 239;   // 205 img + 16 + 16 padding + 1 + 1 borda
-  const IMG_W  = 205;
-  const IMG_H  = 200;
+  const CARD_W = 239; // 205 img + 16 + 16 padding + 1 + 1 borda
+  const IMG_W = 205;
+  const IMG_H = 200;
 
   const SkeletonCard = () => (
     <Card
@@ -83,7 +83,12 @@ export function OverviewAnalyticsView() {
         flexDirection: 'column',
       }}
     >
-      <Skeleton variant="rectangular" width={IMG_W} height={IMG_H} sx={{ borderRadius: 2, mb: 2 }} />
+      <Skeleton
+        variant="rectangular"
+        width={IMG_W}
+        height={IMG_H}
+        sx={{ borderRadius: 2, mb: 2 }}
+      />
       <Skeleton variant="text" width={180} height={28} sx={{ mb: 1 }} />
       <Skeleton variant="rounded" width={120} height={36} />
     </Card>
@@ -105,9 +110,10 @@ export function OverviewAnalyticsView() {
 
         {!loading && programas.length > 0 && (
           <Button
-          href="./softwares"
-          variant="contained"
-          sx={{ backgroundColor: brand.primary, '&:hover': { backgroundColor: brand.hover } }}>
+            href="./softwares"
+            variant="contained"
+            sx={{ backgroundColor: brand.primary, '&:hover': { backgroundColor: brand.hover } }}
+          >
             Obtenha mais
           </Button>
         )}
@@ -196,7 +202,10 @@ export function OverviewAnalyticsView() {
                 alt={programs.description || programs.nome_software}
                 loading="lazy"
               />
-              <Typography variant="h6" sx={{ width: 200, height: 60, textAlign: 'center', mt: 1.5 }}>
+              <Typography
+                variant="h6"
+                sx={{ width: 200, height: 60, textAlign: 'center', mt: 1.5 }}
+              >
                 {programs.nome_software}
               </Typography>
 
@@ -205,7 +214,11 @@ export function OverviewAnalyticsView() {
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="contained"
-                sx={{ mt: 1, backgroundColor: brand.primary, '&:hover': { backgroundColor: brand.hover } }}
+                sx={{
+                  mt: 1,
+                  backgroundColor: brand.primary,
+                  '&:hover': { backgroundColor: brand.hover },
+                }}
               >
                 Baixar
               </Button>
