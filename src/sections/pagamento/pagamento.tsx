@@ -3,7 +3,6 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import {
   Box,
   Card,
-  Alert,
   Stack,
   AppBar,
   Button,
@@ -33,7 +32,6 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import LockIcon from '@mui/icons-material/Lock';
 import ShieldIcon from '@mui/icons-material/Shield';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
@@ -365,6 +363,8 @@ const Pagamento: React.FC = () => {
     if (firstName.length === 0) return alert('Digite seu nome');
     if (lastName.length === 0) return alert('Digite seu sobrenome');
     if (cpf.length === 0) return alert('Digite seu CPF');
+    // if (email.length === 0) return alert('Digite seu E-mail');
+    if (recaptcha.length === 0) return alert('Resolva o recaptcha');
 
     if (method === 'pix') {
       const IdsSoftwaresEscolhidos = cart.map((c: Product) => c.id);
@@ -452,6 +452,7 @@ const Pagamento: React.FC = () => {
                 province: state, // Alterado para o novo campo de estado
               },
             ],
+            token: recaptcha,
           },
           {
             headers: {
@@ -722,8 +723,8 @@ const Pagamento: React.FC = () => {
   }
 
   function onSetRecaptcha(value: any) {
-    alert(value);
-    // setRecaptcha(value);
+    // alert(value);
+    setRecaptcha(value);
   }
 
   return (
@@ -837,19 +838,6 @@ const Pagamento: React.FC = () => {
                       Complete os dados abaixo para concluir sua compra
                     </Typography>
                   </Box>
-
-                  {/* Success */}
-                  {success && (
-                    <Box sx={{ mb: 2 }}>
-                      <Alert
-                        icon={<CheckCircleIcon fontSize="inherit" />}
-                        severity="success"
-                        sx={{ bgcolor: 'var(--success-green)', color: '#fff' }}
-                      >
-                        Pagamento processado com sucesso!
-                      </Alert>
-                    </Box>
-                  )}
 
                   <Box component="form" onSubmit={onSubmit}>
                     {/* Método de Pagamento */}
@@ -1274,30 +1262,10 @@ const Pagamento: React.FC = () => {
                       onClick={handleSubmitPayment}
                       disabled={btnDisabled}
                     >
-                      {submitting
-                        ? 'Processando pagamento...'
-                        : success
-                          ? 'Pagamento Concluído'
-                          : 'Finalizar Compra'}
+                      Finalizar Compra
                     </Button>
                     {statusPayment && processingPaymentComponent()}
                   </Box>
-
-                  {/* Post-success download block */}
-                  {success && (
-                    <Box sx={{ mt: 3, textAlign: 'center' }}>
-                      <Alert
-                        icon={<CheckCircleIcon fontSize="inherit" />}
-                        severity="success"
-                        sx={{ bgcolor: 'var(--success-green)', color: '#fff', mb: 2 }}
-                      >
-                        Pagamento Aprovado! Seu download será disponibilizado em instantes.
-                      </Alert>
-                      <Button variant="contained" startIcon={<DownloadIcon />}>
-                        Fazer Download
-                      </Button>
-                    </Box>
-                  )}
                 </CardContent>
               </Card>
             </Box>

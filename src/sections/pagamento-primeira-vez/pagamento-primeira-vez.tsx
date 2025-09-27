@@ -1,8 +1,8 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import {
   Box,
   Card,
-  Alert,
   Stack,
   AppBar,
   Button,
@@ -32,7 +32,6 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import LockIcon from '@mui/icons-material/Lock';
 import ShieldIcon from '@mui/icons-material/Shield';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
@@ -213,6 +212,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [recaptcha, setRecaptcha] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [cpf, setCpf] = useState('');
   const [phone, setPhone] = useState('');
@@ -275,6 +275,8 @@ const PagamentoPrimeiraVez: React.FC = () => {
     if (lastName.length === 0) return alert('Digite seu sobrenome');
     if (cpf.length === 0) return alert('Digite seu CPF');
     if (email.length === 0) return alert('Digite seu E-mail');
+    if (recaptcha.length === 0) return alert('Resolva o recaptcha');
+
     setBtnDisabled(true);
     localStorage.setItem('email', email);
     const id = window.location.search.split('=')[1];
@@ -392,6 +394,7 @@ const PagamentoPrimeiraVez: React.FC = () => {
                 province: state, // Alterado para o novo campo de estado
               },
             ],
+            token: recaptcha,
           },
           {
             headers: {
@@ -683,6 +686,11 @@ const PagamentoPrimeiraVez: React.FC = () => {
     );
   }
 
+  function onSetRecaptcha(value: any) {
+    // alert(value);
+    setRecaptcha(value);
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -788,18 +796,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                       Complete os dados abaixo para concluir sua compra
                     </Typography>
                   </Box>
-
-                  {success && (
-                    <Box sx={{ mb: 2 }}>
-                      <Alert
-                        icon={<CheckCircleIcon fontSize="inherit" />}
-                        severity="success"
-                        sx={{ bgcolor: 'var(--success-green)', color: '#fff' }}
-                      >
-                        Pagamento processado com sucesso!
-                      </Alert>
-                    </Box>
-                  )}
 
                   <Box component="form" onSubmit={onSubmit}>
                     <Box sx={{ mb: 4 }}>
@@ -1144,6 +1140,10 @@ const PagamentoPrimeiraVez: React.FC = () => {
                             onChange={(e) => setCpf(formatCPF(e.target.value))}
                             inputProps={{ maxLength: 14 }}
                           />
+                          <ReCAPTCHA
+                            sitekey="6LcuGdYrAAAAAFqMIuVtD-4-jyvgAiVoqzk22cD1"
+                            onChange={(value: any) => onSetRecaptcha(value)}
+                          />
                         </Box>
                       ) : (
                         <Box
@@ -1212,21 +1212,6 @@ const PagamentoPrimeiraVez: React.FC = () => {
                     </Button>
                     {statusPayment && processingPaymentComponent()}
                   </Box>
-
-                  {success && (
-                    <Box sx={{ mt: 3, textAlign: 'center' }}>
-                      <Alert
-                        icon={<CheckCircleIcon fontSize="inherit" />}
-                        severity="success"
-                        sx={{ bgcolor: 'var(--success-green)', color: '#fff', mb: 2 }}
-                      >
-                        Pagamento Aprovado! Seu download será disponibilizado em instantes.
-                      </Alert>
-                      <Button variant="contained" startIcon={<DownloadIcon />}>
-                        Fazer Download
-                      </Button>
-                    </Box>
-                  )}
                 </CardContent>
               </Card>
             </Box>
